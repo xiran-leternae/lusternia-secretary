@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.001">
+	<AliasPackage>
+		<AliasGroup isActive="yes" isFolder="yes">
+			<name>quaketracking tally</name>
+			<script></script>
+			<command></command>
+			<packageName></packageName>
+			<regex></regex>
+			<Alias isActive="yes" isFolder="no">
+				<name>quaketracking on - off</name>
+				<script>quaketracking:toggle(matches[2] == "on")</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^\s*qtt (on|off)\s*$</regex>
+			</Alias>
+		</AliasGroup>
+	</AliasPackage>
+
+	<TriggerPackage>
+		<TriggerGroup isActive="no" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+			<name>quaketracking</name>
+			<script></script>
+			<triggerType>0</triggerType>
+			<conditonLineDelta>0</conditonLineDelta>
+			<mStayOpen>0</mStayOpen>
+			<mCommand></mCommand>
+			<packageName></packageName>
+			<mFgColor>#ff0000</mFgColor>
+			<mBgColor>#ffff00</mBgColor>
+			<mSoundFile></mSoundFile>
+			<colorTriggerFgColor>#000000</colorTriggerFgColor>
+			<colorTriggerBgColor>#000000</colorTriggerBgColor>
+			<regexCodeList />
+			<regexCodePropertyList />
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>timequake tally</name>
+				<script>quaketracking:addByDate(matches[2], quaketracking:getPlayers(matches[3]))
+quaketracking:sendLogDate(matches[2]) -- convert date</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - Participated in Timequake\: ((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>timequake log converted date</name>
+				<script>quaketracking:addConvertedDate(matches[3].."\/"..matches[2].." "..matches[4], matches[5].." "..matches[6])</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^Real world (\d{2}\/\d{2})\/(\d{4}) at (\d{2}:\d{2}:\d{2}):00 would be (\d+)(?:st|nd|rd|th) of (\w+), year \d+.$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+		</TriggerGroup>
+	</TriggerPackage>
+
+	<ScriptPackage>
+		<ScriptGroup isActive="yes" isFolder="yes">
+			<name>quaketracking</name>
+			<packageName></packageName>
+			<script>if not quaketracking then
+  quaketracking = {}
+end</script>
+			<eventHandlerList />
+			<Script isActive="yes" isFolder="no">
+				<name>variables</name>
+				<packageName></packageName>
+				<script>quaketracking:reset()</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>functions</name>
+				<packageName></packageName>
+				<script>function quaketracking:toggle(isOn)
+  if isOn then
+  	quaketracking:reset()
+  	cecho("\n&lt;green&gt;Quaketracking tally enabled. Read org logs and run &lt;white&gt;qtt off&lt;green&gt; to finish data gathering.\n")
+  	quaketracking.enabled = true
+  	enableTrigger("quaketracking")
+  else
+  	if quaketracking.enabled then
+  		quaketracking.display_stats()
+  	end
+  	quaketracking.enabled = false
+  	disableTrigger("quaketracking")
+  	cecho("\n&lt;red&gt;quaketracking tally disabled. See stats above.\n")
+  end
+end
+
+function quaketracking:reset()
+  quaketracking.byPlayer = {}
+  quaketracking.byDate = {}
+  quaketracking.convertedDate = {}
+end
+
+function quaketracking:getPlayers(participatingString)
+  local players = {}
+  participatingString = string.gsub(participatingString, ",? and ", ", ", 1)..", "
+  for name in string.gmatch(participatingString, "([^, ]+)") do
+    table.insert(players, name)
+  end
+  return players
+end
+
+function quaketracking:addByDate(logDate, players)
+  quaketracking.byDate[logDate] = players
+end
+
+function quaketracking:sendLogDate(logDate)
+  local gmtDate = string.gsub(logDate, "(%d+)/(%d+/%d+) (%d+)", "%2/%1 %3")
+  send("date "..gmtDate)
+end
+
+function quaketracking:addConvertedDate(logDate, gameDate)
+  quaketracking.convertedDate[logDate] = gameDate
+end
+
+function quaketracking:tallyByPlayer()
+  for logDate, gameDate in orderedPairs(quaketracking.convertedDate) do
+    for i, name in ipairs(quaketracking.byDate[logDate]) do
+      if quaketracking.byPlayer[name] == nil then
+        quaketracking.byPlayer[name] = {}
+      end
+      table.insert(quaketracking.byPlayer[name], gameDate)
+    end
+  end
+  return quaketracking.byPlayer
+end
+
+
+function quaketracking:display_stats()
+	cecho("\n------------- Timequake Tally ------------------ \n")
+  quaketracking:tallyByPlayer()
+	for player, quakeDates in pairs(quaketracking.byPlayer) do
+  	cecho("&lt;green:&gt;\n"..player..":\n")
+    for i, quakeDate in ipairs(quakeDates) do
+      cecho(quakeDate.."\n")
+    end
+  end
+end
+</script>
+				<eventHandlerList />
+			</Script>
+		</ScriptGroup>
+	</ScriptPackage>
+</MudletPackage>
