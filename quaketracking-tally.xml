@@ -140,7 +140,7 @@ function quaketracking:addConvertedDate(logDate, gameDate)
 end
 
 function quaketracking:tallyByPlayer()
-  for logDate, gameDate in orderedPairs(quaketracking.convertedDate) do
+  for logDate, gameDate in spairs(quaketracking.convertedDate) do
     for i, name in ipairs(quaketracking.byDate[logDate]) do
       if quaketracking.byPlayer[name] == nil then
         quaketracking.byPlayer[name] = {}
