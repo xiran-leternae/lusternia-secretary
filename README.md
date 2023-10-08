@@ -62,4 +62,4 @@ Custom formulas for rewards (ex. default code has a library reward of book weigh
 * To update rewards, edit Scripts: 'fairySec tally functions' and org specific variables.
 
 # Contact Support
-Xiran can be reached via the official Lusternia Discord or at the Lusternia Forums. Thank you!
+Xiran can be reached via the official Lusternia Discord or at the Lusternia Forums ([thread here](https://forums.lusternia.com/discussion/4882/fairysecretary-tally-org-rewards-mudlet/)). Thank you!
