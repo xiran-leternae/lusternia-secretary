@@ -720,7 +720,7 @@ elseif cmd == "reset" then
 elseif cmd == "save" then
   fairySec:save()
 elseif cmd == "review" then
-  fairySec.print:trackedActivities()
+  fairySec.print:trackedActivities(args)
 elseif (cmd == "add" or cmd == "update") and args ~= nil then
   local timestamp, uniqueAppend, trackedType, desc, names = getActivityArgs(args)
   local activity = {
@@ -981,7 +981,7 @@ end
 function fairySec:showCmds()
   echo("FAIRYSEC INSTRUCTIONS - instructions for manually gathering logs\n"..
     "FAIRYSEC RESET\t - reset gathered logs\n"..
-    "FAIRYSEC REVIEW\t - show the gathered logs\n"..
+    "FAIRYSEC REVIEW [search] - show the gathered logs\n"..
     "FAIRYSEC SAVE\t - save the gathered logs to a file\n"..
     "FAIRYSEC REPORT [&lt;person&gt;|ALL] [FOR &lt;year&gt; CE WITH &lt;orgCredits&gt; CREDITS]\n"..
     "\t\t - show tally for org member or all of the org\n"..
@@ -1294,7 +1294,7 @@ if not fairySec.print then
   fairySec.print = {}
 end
 
-function fairySec.print:trackedActivities()
+function fairySec.print:trackedActivities(searchQuery)
   local trackedActivities = fairySec.db.log
   local year = fairySec.rewards.total.year
   if year == nil or year == "" then
@@ -1302,28 +1302,34 @@ function fairySec.print:trackedActivities()
   else
     year = year.." CE"
   end
+  local showQuery = ""
+  if searchQuery ~= nil then
+    showQuery = " with "..searchQuery
+  end
   echo("=================================\n"..
-    "= Tracked Activities for "..year.." =\n"..
+    "= Tracked Activities for "..year..showQuery.." =\n"..
     "=================================\n"..
     "\n")
 
   if trackedActivities ~= nil then    
     for _, activity in spairs(trackedActivities) do
-      -- assumes trackedType appended at end
-      local idSplit = activity.uniqueId:split(" ")
-      table.remove(idSplit, idSplit[size])
-      local id = table.concat(idSplit, " ")
-      local names = activity.names
-      if names ~= "" then
-        names = ": "..names
+      if searchQuery == nil or string.find(concatActivity(activity):lower(), searchQuery:lower()) then
+        -- assumes trackedType appended at end
+        local idSplit = activity.uniqueId:split(" ")
+        table.remove(idSplit, idSplit[size])
+        local id = table.concat(idSplit, " ")
+        local names = activity.names
+        if names ~= "" then
+          names = ": "..names
+        end
+        echo(id.." ")
+        if names == "" or activity.trackedType == "audit" then
+          cecho(fairySec.config.warningColor.."{"..activity.trackedType.."}")
+        else
+          cecho(fairySec.config.color.."("..activity.trackedType..")")
+        end
+        echo(" "..activity.desc..names.."\n")
       end
-      echo(id.." ")
-      if names == "" or activity.trackedType == "audit" then
-        cecho(fairySec.config.warningColor.."{"..activity.trackedType.."}")
-      else
-        cecho(fairySec.config.color.."("..activity.trackedType..")")
-      end
-      echo(" "..activity.desc..names.."\n")
     end
   end
   echo("====End of Tracked Activities====\n\n")
