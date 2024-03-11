@@ -1294,6 +1294,14 @@ if not fairySec.print then
   fairySec.print = {}
 end
 
+local function concatActivity(activity)
+  return activity.uniqueId.." "..
+    activity.timestamp.." "..
+    activity.trackedType.." "..
+    activity.desc.." "..
+    activity.names
+end
+
 function fairySec.print:trackedActivities(searchQuery)
   local trackedActivities = fairySec.db.log
   local year = fairySec.rewards.total.year
@@ -1334,7 +1342,6 @@ function fairySec.print:trackedActivities(searchQuery)
   end
   echo("====End of Tracked Activities====\n\n")
 end
-
 
 function fairySec.print:org(asSummary)
   fairySec.print:header(fairySec.rewards.total)
