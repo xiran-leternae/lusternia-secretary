@@ -868,7 +868,6 @@ fairySec.orgPolicy = {
     ["power"] = "Power",
     ["ikon"] = "Ikon Tournament"
   },
-  ["maxTimequakeReward"] = 36,
   ["revolt"] = {
     "Stewartsville",
     "Estelbar",
@@ -1622,9 +1621,6 @@ end
 function fairySec.orgRecord:tallyTimequakeSubTotalOf(record)
   local timequakeSubTotal = table.size(record.timequake) * fairySec.rewards.timequake
   
-  if timequakeSubTotal &gt; fairySec.orgPolicy.maxTimequakeReward then
-    timequakeSubTotal = fairySec.orgPolicy.maxTimequakeReward
-  end
   record.subtotals.timequake = timequakeSubTotal
 
   return record.subtotals.timequake
