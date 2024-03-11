@@ -840,14 +840,15 @@ fairySec.loggedActivitySchema = {
           <packageName></packageName>
           <script>--- org-specific rewards in terms of marks/credits
 fairySec.rewards = {
-  ["timequake"] = 3,
+  ["timequake"] = 2,
   ["domoth"] = 5,
-  ["revolt"] = 5,
-  ["aetherflare"] = 5,
-  ["otherConquest"] = 5,
-  ["design"] = 15,
+  ["revolt"] = 15,
+  ["aetherflare"] = 15,
+  ["otherConquest"] = 15,
+  ["design"] = 10,
   ["prestige"] = 60,
-  ["empower"] = 10, -- empowering the Aspects/Elemental Lords
+  ["empower"] = 15, -- empowering the Aspects/Elemental Lords
+  ["otherEmpower"] = 5, -- non-commune empowering the Aspects/Elemental Lords
   ["total"] = {
     ["year"] = "",
     ["logDateStart"] = "",
@@ -960,7 +961,7 @@ end</script>
 end
 
 fairySec.config.showIcon = true
-fairySec.config.color = "&lt;PaleGreen&gt;"
+fairySec.config.color = "&lt;plum&gt;"
 fairySec.config.warningColor = "&lt;gold&gt;"
 fairySec.config.errorColor = "&lt;tomato&gt;"
 fairySec.config.debug = true</script>
@@ -1188,7 +1189,7 @@ end</script>
 end
 
 function fairySec:showButterfly()
-  cecho(fairySec.config.color.."{\\w/}\n"..
+  cecho(fairySec.config.color.."{\\M/}\n"..
     "(/:\\)\n")
 end
 
