@@ -2,7 +2,7 @@
 <!DOCTYPE MudletPackage>
 <MudletPackage version="1.001">
   <TriggerPackage>
-    <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+    <TriggerGroup isActive="no" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
       <name>Fairy Secretary</name>
       <script></script>
       <triggerType>0</triggerType>
@@ -56,7 +56,100 @@ fairySec:addConvertedDate(logDate, matches[5].." "..matches[6], matches[7])</scr
           </regexCodePropertyList>
         </Trigger>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>audit</name>
+          <name>log reward year date</name>
+          <script>local logDate = matches[2]
+local desc = matches[3]
+local yearlyCredits = matches[4]
+local loggedActivity = {
+  uniqueId = logDate.." ".."rewardAudit audit",
+  timestamp = logDate,
+  desc = desc,
+  trackedType = "audit",
+  names = ""
+}
+fairySec:addActivity(loggedActivity)
+
+if (fairySec.rewards.total.logDateStart ~= "" and fairySec.isRoughYearStart() and
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) + fairySec.HOUR_IN_SECONDS) then
+  fairySec.rewards.total.logDateStart = logDate
+  fairySec:debug("setting logDateStart "..logDate)
+end
+if (fairySec.rewards.total.logDateEnd ~= "" and fairySec.isRoughYearEnd() and
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
+  fairySec.rewards.total.logDateEnd = logDate
+  fairySec.rewards.total.yearlyCredits = tonumber(yearlyCredits)
+  fairySec:debug("setting logDateEnd "..logDate)
+  fairySec:debug("setting yearlyCredits "..logDate)
+end
+</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand></mCommand>
+          <packageName></packageName>
+          <mFgColor>#dda0dd</mFgColor>
+          <mBgColor>transparent</mBgColor>
+          <mSoundFile></mSoundFile>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has been (awarded (\d+) credits for the yearly competition)</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>audit pointlog</name>
+          <script>local logDate = matches[2]
+local desc = matches[3]
+local descLowercase = desc:lower()
+local loggedActivity = {
+  timestamp = logDate,
+  desc = desc,
+  trackedType = "audit",
+  names = ""
+}
+fairySec:addActivity(loggedActivity)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand></mCommand>
+          <packageName></packageName>
+          <mFgColor>#ffd700</mFgColor>
+          <mBgColor>transparent</mBgColor>
+          <mSoundFile></mSoundFile>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Village Revolt - the Village of \w+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Village Revolt \- the Village of \w+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored 50 points - (Directing a prize-winning production.*)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Submitted a stage production.*)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Aetherflare - (?:\w+\s?)+)$</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in aetherflare - (?:\w+\s?)+)$</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Wildnodes)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Wildnodes)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Village Revolt - Ptoma Hive)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Village Revolt - Ptoma Hive)</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>0</integer>
+            <integer>0</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>audit org</name>
           <script>local logDate = matches[2]
 local desc = matches[3]
 local descLowercase = desc:lower()
@@ -84,13 +177,11 @@ end
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ \&gt; (?:[ \/0-9A-Za-z,\(\)\.\:\-'#])+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ \&gt; .+)</string>
             <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ communefavoured \w+ for: (?:[ 0-9A-Za-z,\(\)\.\:\-'])+)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Village Revolt - the Village of \w+)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Village Revolt \- the Village of \w+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ has deposited .*)</string>
             <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ donated .*)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored 50 points - (Directing a prize-winning production.*)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Submitted a stage production.*)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ activated a colossus .*)</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>1</integer>
@@ -98,40 +189,9 @@ end
             <integer>1</integer>
             <integer>1</integer>
             <integer>1</integer>
-            <integer>0</integer>
-            <integer>0</integer>
           </regexCodePropertyList>
         </Trigger>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>audit orgCredits reward</name>
-          <script>local logDate = matches[2]
-local desc = matches[3]
-local loggedActivity = {
-  uniqueId = logDate.." ".."reward audit",
-  timestamp = logDate,
-  desc = desc,
-  trackedType = "audit",
-  names = ""
-}
-fairySec:addActivity(loggedActivity)</script>
-          <triggerType>0</triggerType>
-          <conditonLineDelta>0</conditonLineDelta>
-          <mStayOpen>0</mStayOpen>
-          <mCommand></mCommand>
-          <packageName></packageName>
-          <mFgColor>#ff0000</mFgColor>
-          <mBgColor>#ffff00</mBgColor>
-          <mSoundFile></mSoundFile>
-          <colorTriggerFgColor>#000000</colorTriggerFgColor>
-          <colorTriggerBgColor>#000000</colorTriggerBgColor>
-          <regexCodeList>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has been (awarded \d+ credits for the yearly competition)</string>
-          </regexCodeList>
-          <regexCodePropertyList>
-            <integer>1</integer>
-          </regexCodePropertyList>
-        </Trigger>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>audit ikon reward</name>
           <script>local loggedIkon = {
   uniqueId = matches[2].." ikon"..matches[4].." audit",
@@ -146,8 +206,8 @@ fairySec:addActivity(loggedIkon)</script>
           <mStayOpen>0</mStayOpen>
           <mCommand></mCommand>
           <packageName></packageName>
-          <mFgColor>#ff0000</mFgColor>
-          <mBgColor>#ffff00</mBgColor>
+          <mFgColor>#ffd700</mFgColor>
+          <mBgColor>transparent</mBgColor>
           <mSoundFile></mSoundFile>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
@@ -193,7 +253,7 @@ fairySec:addActivity(loggedPower)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#aaff7f</mFgColor>
+            <mFgColor>#dda0dd</mFgColor>
             <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
@@ -241,7 +301,7 @@ fairySec:addActivity(loggedQuake)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#aaff7f</mFgColor>
+            <mFgColor>#dda0dd</mFgColor>
             <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
@@ -268,12 +328,10 @@ fairySec:addActivity(loggedQuake)</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>domoth</string>
-            <string>Domoth</string>
+            <string>(d|D)omoth</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>0</integer>
-            <integer>0</integer>
+            <integer>1</integer>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>domoth tally</name>
@@ -291,7 +349,7 @@ fairySec:addActivity(loggedDomoth)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#aaff7f</mFgColor>
+            <mFgColor>#dda0dd</mFgColor>
             <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
@@ -318,12 +376,10 @@ fairySec:addActivity(loggedDomoth)</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>revolt</string>
-            <string>Revolt</string>
+            <string>(r|R)evolts?</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>0</integer>
-            <integer>0</integer>
+            <integer>1</integer>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>revolt tally</name>
@@ -339,7 +395,7 @@ fairySec:addActivity(loggedRevolt)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#aaff7f</mFgColor>
+            <mFgColor>#dda0dd</mFgColor>
             <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
@@ -373,7 +429,7 @@ fairySec:addActivity(loggedRevolt)</script>
             <integer>0</integer>
             <integer>0</integer>
           </regexCodePropertyList>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>aetherflare tally</name>
             <script>local loggedFlare = {
   timestamp = matches[2],
@@ -388,8 +444,8 @@ fairySec:addActivity(loggedFlare)
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#ff0000</mFgColor>
-            <mBgColor>#ffff00</mBgColor>
+            <mFgColor>#dda0dd</mFgColor>
+            <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
@@ -420,7 +476,7 @@ fairySec:addActivity(loggedFlare)
           <regexCodePropertyList>
             <integer>1</integer>
           </regexCodePropertyList>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>wild nodes tally</name>
             <script>local loggedConquest = {
   timestamp = matches[2],
@@ -434,8 +490,8 @@ fairySec:addActivity(loggedConquest)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#ff0000</mFgColor>
-            <mBgColor>#ffff00</mBgColor>
+            <mFgColor>#dda0dd</mFgColor>
+            <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
@@ -480,7 +536,7 @@ fairySec:addActivity(loggedDesign)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#aaff7f</mFgColor>
+            <mFgColor>#dda0dd</mFgColor>
             <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
@@ -534,7 +590,7 @@ fairySec.db.orgCulture[bookId] = author</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#aaff7f</mFgColor>
+            <mFgColor>#dda0dd</mFgColor>
             <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
@@ -546,7 +602,7 @@ fairySec.db.orgCulture[bookId] = author</script>
               <integer>1</integer>
             </regexCodePropertyList>
           </Trigger>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>library prestige tally</name>
             <script>local contestType = matches[3]
 local desc = matches[4]
@@ -566,8 +622,8 @@ fairySec:addActivity(loggedLibrary)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#ff0000</mFgColor>
-            <mBgColor>#ffff00</mBgColor>
+            <mFgColor>#dda0dd</mFgColor>
+            <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
@@ -580,12 +636,88 @@ fairySec:addActivity(loggedLibrary)</script>
           </Trigger>
         </Trigger>
       </TriggerGroup>
+      <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>fairySec set reward year date</name>
+        <script>local lusternianDate = matches[2].." "..matches[3]
+local lusternianYear = matches[4]
+local logDate = matches[7].."\/"..string.format("%02d",matches[5]).."\/"..string.format("%02d",matches[6])..
+  " "..string.format("%02d",matches[8])..matches[9]
+fairySec:addConvertedDate(logDate, lusternianDate, lusternianYear)
+
+if lusternianDate == "1 Estar" then
+  if tonumber(lusternianYear) == fairySec.rewards.total.year then
+    fairySec.rewards.total.logDateStart = logDate
+    fairySec:debug("setting rough logDateStart "..logDate)
+  elseif tonumber(lusternianYear) == fairySec.rewards.total.year + 1 then
+    fairySec.rewards.total.logDateEnd = logDate
+    fairySec:debug("setting rough logDateEnd "..logDate)
+  end
+ 
+  if fairySec.rewards.total.logDateStart ~= "" and fairySec.rewards.total.logDateEnd ~= "" then
+    raiseEvent("fairySecSetYearStartEnd")
+    disableTrigger("fairySec set reward year date")
+  end
+end</script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand></mCommand>
+        <packageName></packageName>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile></mSoundFile>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList>
+          <string> Lusternian date (\d+) (\w+), year (\d+) at midnight would be (\d+)\/(\d+)\/(\d{4}) at (\d+)(\:\d{2})</string>
+        </regexCodeList>
+        <regexCodePropertyList>
+          <integer>1</integer>
+        </regexCodePropertyList>
+      </Trigger>
+      <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>fairySec config</name>
+        <script></script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand></mCommand>
+        <packageName></packageName>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile></mSoundFile>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList />
+        <regexCodePropertyList />
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>fairySec set config page length</name>
+          <script>fairySec.config.originalPageLength = matches[2]
+disableTrigger("fairySec get config page length")</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand></mCommand>
+          <packageName></packageName>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile></mSoundFile>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Your current pagelength: (\d+)</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+      </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
 
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
-      <name>FairySecretary</name>
+      <name>Fairy Secretary</name>
       <script></script>
       <command></command>
       <packageName></packageName>
@@ -627,7 +759,8 @@ local function getReportArgs(args)
     else
       person = string.trim(person)
     end
-    _, _, year, orgCredits = string.find(string.sub(args, endIndex + 1), "[fF][oO][rR]%s*(%d+)%s*[cC][oO]?[eE]%s*[wW][iI][tT][hH]%s*(%d+)%s*[cC][rR][eE][dD][iI][tT][sS]")
+    _, _, year = string.find(string.sub(args, endIndex + 1), "[fF][oO][rR]%s*(%d+)%s*[cC][oO]?[eE]")
+    _, _, orgCredits = string.find(string.sub(args, endIndex + 1), "[wW][iI][tT][hH]%s*(%d+)%s*[cC][rR][eE][dD][iI][tT][sS]")
   else
     person = "all"
   end
@@ -675,31 +808,27 @@ elseif (cmd == "remove" or cmd == "delete") and args ~= nil then
 elseif cmd == "report" then
   local person, year, orgCredits = getReportArgs(args)
   if orgCredits ~= nil then
-    fairySec.rewards.total.year = year
+    fairySec.rewards.total.year = tonumber(year)
     orgCredits = tonumber(orgCredits)
     fairySec.rewards.total.yearlyCredits = orgCredits
+  elseif year ~= nil then
+    fairySec:gather(tonumber(year)) -- gather records and determine orgCredits
   else
     year = fairySec.rewards.total.year
     orgCredits = fairySec.rewards.total.yearlyCredits
   end
   if orgCredits ~= nil and orgCredits &gt; 0 then
     fairySec:debug("report "..person.." in "..year.." CE "..orgCredits.." credits")
+  elseif year ~= nil then
+    fairySec:debug("report "..person.." in "..year.." CE")
   else
     fairySec:debug("report "..person)
   end
-  if person ~= "all" and person ~= nil then
-    fairySec.orgRecord:setRecordFor(person)
-    fairySec.orgRecord:tallyTotalsFor(person)
-    fairySec.print:person(person)
-    fairySec:showIcon()
-    fairySec.orgRecord:echoTallyErrorsAndWarnings()
-  else -- all
-    fairySec.orgRecord:setOrgRecords()
-    fairySec.orgRecord:tallyOrgTotals(fairySec.rewards.total.yearlyCredits)
-    fairySec.print:org()
-    fairySec:showIcon()
-    fairySec.orgRecord:echoTallyErrorsAndWarnings()
+  if not fairySec:isGathering() then
+    fairySec:report(person)
   end
+elseif cmd == "rewards" then
+  fairySec.print:orgDistribution()
 else
   fairySec.showHelp()
 end</script>
@@ -736,7 +865,21 @@ end</script>
   fairySec = {}
 end
 
-fairySec.isGathering = false
+fairySec.DAY_IN_SECONDS = 24 * 60 * 60
+fairySec.HOUR_IN_SECONDS = 1 * 60 * 60
+
+
+function fairySec:isGathering()
+  return isActive("Fairy Secretary", "trigger")
+end
+
+function fairySec:isRoughYearStart()
+  return string.len(fairySec.rewards.total.logDateStart) &lt; 19
+end
+
+function fairySec:isRoughYearEnd()
+  return string.len(fairySec.rewards.total.logDateEnd) &lt; 19
+end
 
 fairySec.tracking = {
   ["types"] = {"audit", "timequake", "domoth", "revolt", "aetherflare", "otherConquest",
@@ -781,7 +924,7 @@ fairySec.rewards = {
     ["logDateEnd"] = "",
     ["yearlyCredits"] = 0,
     ["memberCredits"] = 0,
-    ["guildCredits"] = 150,
+    ["guildCredits"] = 50 * 3,
   },
 }
 
@@ -895,7 +1038,9 @@ fairySec.config.showIcon = true
 fairySec.config.color = "&lt;plum&gt;"
 fairySec.config.warningColor = "&lt;gold&gt;"
 fairySec.config.errorColor = "&lt;tomato&gt;"
-fairySec.config.debug = true</script>
+fairySec.config.debug = true
+
+-- fairySec.config.originalPageLength</script>
           <eventHandlerList />
         </Script>
       </Script>
@@ -910,14 +1055,13 @@ fairySec.config.debug = true</script>
 end
  
 function fairySec:showCmds()
-  echo("FAIRYSEC INSTRUCTIONS - instructions for manually gathering logs\n"..
+  echo("FAIRYSEC INSTRUCTIONS - instructions for generating report\n"..
+    "FAIRYSEC REPORT [&lt;person&gt;|ALL] [FOR &lt;year&gt; CE]\n"..
+    "\t\t - show tally for org member or all of the org\n"..
     "FAIRYSEC RESET\t - reset gathered logs\n"..
     "FAIRYSEC REVIEW [search] - show the gathered logs\n"..
     "FAIRYSEC SAVE\t - save the gathered logs to a file\n"..
-    "FAIRYSEC REPORT [&lt;person&gt;|ALL] [FOR &lt;year&gt; CE WITH &lt;orgCredits&gt; CREDITS]\n"..
-    "\t\t - show tally for org member or all of the org\n"..
-    "FAIRYSEC REWARDS\n"..
-    "\t\t - show syntax for distributing rewards to org members\n"..
+    "FAIRYSEC REWARDS - after running report, show syntax for distributing rewards to org members\n"..
     "\n"..
     "FAIRYSEC ADD [timestamp] [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
     "FAIRYSEC UPDATE &lt;timestamp&gt; [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
@@ -929,15 +1073,13 @@ end
 function fairySec:showInstructions()
   echo("Instructions:\n")
   echo("* If not already done, configure org-specific variables under 'fairySec variables' &gt; 'org specific'\n"..
-      "1. Manually enable trigger group 'fairySec tracking'\n"..
-      "2. Read logs. There is an alias to help with this.\n"..
+      "1. FAIRYSEC REPORT FOR &lt;year&gt; CE, Ex.\n"..
+      "\tFAIRYSEC REPORT FOR 672 CE\n"..
+      "2. FAIRYSEC REVIEW [search] and modify log entries as needed. Ex.\n"..
+      "\tFAIRYSEC ADD 2023/10/01 22:31:48 (otherConquest) Wild Nodes: Tirah\n"..
+      "3. If any entries are missing, read logs to compare. There is an alias to help with this.\n"..
       "\tSEARCHLOG &lt;log name&gt; &lt;start weave&gt; &lt;end weave&gt; [query], Ex.\n"..
-      "\tSEARCHLOG GLOMDORING 21 8 timequake\n"..
-      "3. Manually disable trigger group 'fairySec tracking' when done\n"..
-      "4. FAIRYSEC REVIEW and modify log entries as needed. Ex.\n"..
-      "\tFAIRYSEC ADD 2023/10/01 22:31:48 (otherConquest) Wild Nodes: Jolanthe, Madungonga, Galaphyrae, Huskii, Xiran\n"..
-      "5. FAIRYSEC REPORT FOR &lt;year&gt; CE WITH &lt;orgCredits&gt; CREDITS, Ex.\n"..
-      "\tFAIRYSEC REPORT FOR 659 CE WITH 600 CREDITS\n")
+      "\tSEARCHLOG GLOMDORING 21 8 timequake\n")
   -- fairySec:showIcon()
   -- echo("For Coding:\n")
   -- echo("To update searching through logs, edit Triggers under Fairy Secretary\n")
@@ -946,23 +1088,35 @@ function fairySec:showInstructions()
 end
 
 function fairySec:gather(year)
+  fairySec:reset()
   fairySec.rewards.total.year = year
-  fairySec.rewards.total.logDateStart = ""
-  fairySec.rewards.total.logDateEnd = ""
-  fairySec.records = {}
 
-  fairySec.isGathering = false
-  disableTrigger("fairySec tracking")
-  enableTrigger("fairySec get reward year date")
-  -- get year start and year end from log
-  local dayInMilliseconds = 24 * 60 * 60 * 1000
-  send("readlog serenwilde 0 21 yearly")
+  enableTrigger("Fairy Secretary")
+  enableTrigger("fairySec set reward year date")
+  send("date 1 estar "..year.." ce")
+  send("date 1 estar "..(year + 1).." ce")
+end
+
+function fairySec:report(person)
+  if person ~= "all" and person ~= nil then
+    fairySec.orgRecord:setRecordFor(person)
+    fairySec.orgRecord:tallyTotalsFor(person)
+    fairySec.print:person(person)
+    fairySec:showIcon()
+    fairySec.orgRecord:echoTallyErrorsAndWarnings()
+  else -- all
+    fairySec.orgRecord:setOrgRecords()
+    fairySec.orgRecord:tallyOrgTotals(fairySec.rewards.total.yearlyCredits)
+    fairySec.print:org()
+    fairySec:showIcon()
+    fairySec.orgRecord:echoTallyErrorsAndWarnings()
+  end
 end
 
 function fairySec:reset()
   fairySec.db.log = {}
   fairySec.db.convertedDate = {}
-  fairySec.isGathering = false
+  disableTrigger("Fairy Secretary")
   if io.exists(getMudletHomeDir().."/fairySecTracking.lua") then
     table.save(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
   end
@@ -1023,9 +1177,9 @@ function fairySec:addActivity(loggedActivity, operation, showConfirmation)
       fairySec:error("unrecognised trackedType of "..loggedActivity.trackedType.." on activity: "..loggedActivity.desc)
     elseif loggedActivity.names == nil then
       fairySec:error("names required on activity: "..loggedActivity.desc)
-    elseif fairySec.isGathering and
-        ((fairySec.rewards.total.logDateStart ~= "" and loggedActivity.timestamp &lt;= fairySec.rewards.total.logDateStart) or
-        (fairySec.rewards.total.logDateEnd ~= "" and loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd)) then
+    elseif fairySec.isGathering() and fairySec.rewards.total.logDateStart ~= "" and fairySec.rewards.total.logDateEnd ~= "" and
+        ((not fairySec.isRoughYearStart() and loggedActivity.timestamp &lt;= fairySec.rewards.total.logDateStart) or
+        (not fairySec.isRoughYearEnd() and loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd)) then
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
     else
       local activity = setNewActivity(loggedActivity)
@@ -1165,10 +1319,26 @@ end
 function fairySec:addConvertedDate(logDate, gameDate, gameYear)
   fairySec.db.convertedDate[logDate] = { ["date"] = gameDate, ["year"] = gameYear }
   local gameDate = fairySec.db.convertedDate[logDate]
-  fairySec:debug("adding convertedDate "..logDate.." = { date = "..gameDate.date..", year = "..gameDate.year.." }")
+  -- fairySec:debug("adding convertedDate "..logDate.." = { date = "..gameDate.date..", year = "..gameDate.year.." }")
   
   return gameDate
 end
+
+function fairySec:getOSTime(logDate)
+  local _, _, year, month, day, hour, min = string.find(logDate, "(%d%d%d%d)/(%d%d)/(%d%d) (%d%d):(%d%d)")
+  local time = os.time({
+    year = tonumber(year), 
+    month = tonumber(month),
+    day = tonumber(day),
+    hour = tonumber(hour),
+    min = tonumber(min)
+  })
+  -- fairySec:debug("os.time of "..time.." = { "..
+  --   "year = "..year..", month = "..month..", day = "..day..", hour = "..hour..", min = "..min..
+  --   " }")
+  return time
+end
+
 
 function fairySec:getGameDate(logDate)
   return fairySec.db.convertedDate[logDate].date
@@ -1727,6 +1897,71 @@ function fairySec.orgRecord:echoTallyErrorsAndWarnings()
 end</script>
           <eventHandlerList />
         </Script>
+        <ScriptGroup isActive="yes" isFolder="yes">
+          <name>fairySec sys</name>
+          <packageName></packageName>
+          <script></script>
+          <eventHandlerList />
+          <Script isActive="yes" isFolder="no">
+            <name>fairySecGatherLogs</name>
+            <packageName></packageName>
+            <script>function fairySecGatherLogs()
+  fairySec:gatherLogs()
+end
+
+function fairySec:gatherLogs()
+  local gameYear = fairySec.rewards.total.year
+
+  local weaveStart = math.ceil(
+    (os.time(os.date("!*t")) - fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS) / fairySec.DAY_IN_SECONDS
+  )
+  local weaveEnd = math.floor(
+    (os.time(os.date("!*t")) - fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) / fairySec.DAY_IN_SECONDS
+  )
+  fairySec:debug("weaveStart = "..weaveStart..", weaveEnd = "..weaveEnd)
+  if weaveEnd &gt; 30 or weaveStart &lt; 0 then
+    fairySec:error("year "..gameYear.." not in org logs")
+    return
+  end
+  if weaveStart &gt; 30 then
+    weaveStart = 30
+    fairySec.orgRecord:addWarning("start date of "..gameYear.." may be beyond org logs")
+  end
+  if weaveEnd &lt; 0 then 
+    weaveEnd = 0
+    fairySec.orgRecord:addWarning("end date of "..gameYear.." may be in future")
+  end
+  
+  fairySec:setOriginalPageLength()
+  tempTimer(0.1,
+    function()
+      send("config pagelength "..250)
+      fairySec:searchLog(fairySec.orgPolicy.name, weaveStart, weaveEnd)
+      fairySec:searchLog("pointlog", weaveStart, weaveEnd)
+    end
+  )
+  tempTimer(0.4,
+    function()
+      disableTrigger("Fairy Secretary")
+      send("config pagelength "..fairySec.config.originalPageLength)
+      fairySec:report("all")
+    end
+  )
+end</script>
+            <eventHandlerList>
+              <string>fairySecSetYearStartEnd</string>
+            </eventHandlerList>
+          </Script>
+          <Script isActive="yes" isFolder="no">
+            <name>fairySec set originalPageLength</name>
+            <packageName></packageName>
+            <script>function fairySec:setOriginalPageLength()
+  enableTrigger("fairySec set config page length")
+  send("config pagelength")
+end</script>
+            <eventHandlerList />
+          </Script>
+        </ScriptGroup>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>fairySec anomaly distribution</name>
