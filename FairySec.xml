@@ -870,7 +870,7 @@ fairySec.HOUR_IN_SECONDS = 1 * 60 * 60
 
 
 function fairySec:isGathering()
-  return isActive("Fairy Secretary", "trigger")
+  return isActive("Fairy Secretary", "trigger") > 0
 end
 
 function fairySec:isRoughYearStart()
