@@ -6,16 +6,16 @@ Download the raw of FairySec.xml. In Mudlet, select Packages and Install New Pac
 
 # Instructions
 Note: If not already done, configure org-specific variables under 'fairySec variables' > 'org specific'
-1. FAIRYSEC GATHER FOR &lt;year&gt; CE, Ex.\n"..
+1. FAIRYSEC GATHER FOR &lt;year&gt; CE, Ex."
 ```
 FAIRYSEC GATHER FOR 672 CE
 ```
-2. FAIRYSEC REVIEW [search] and modify log entries as needed. Ex.\n..
+2. FAIRYSEC REVIEW [search] and modify log entries as needed. Ex.
 ```
 FAIRYSEC UPDATE 2023/10/01 22:31:48 (power) empowered an Aspect - 5: Ayisdra
 FAIRYSEC ADD (ikon) Participation - 5: Esei
 ```
-3. If any entries are missing, read logs to compare. There is an alias to help with this.\n..
+3. If any entries are missing, read logs to compare. There is an alias to help with this.
 `SEARCHLOG <log name> <start weave> <end weave> [query]`, Ex.
 ```
 SEARCHLOG SERENWILDE 21 8 timequake
