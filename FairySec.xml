@@ -67,7 +67,7 @@ local loggedActivity = {
   trackedType = "audit",
   names = ""
 }
-fairySec:addActivity(loggedActivity)
+if not fairySec:hasActivity(loggedActivity) then fairySec:addActivity(loggedActivity) end
 
 if (fairySec.rewards.total.logDateStart ~= "" and fairySec.isRoughYearStart() and
     fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS and
@@ -244,7 +244,7 @@ fairySec:addActivity(loggedIkon)</script>
 local loggedPower = {
   timestamp = matches[2],
   trackedType = "power",
-  desc = matches[4],
+  desc = matches[4].." - "..fairySec.rewards.empower,
   names = matches[3]
 }
 fairySec:addActivity(loggedPower)</script>
@@ -691,12 +691,12 @@ end</script>
         <regexCodeList />
         <regexCodePropertyList />
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>fairySec set config page length</name>
-          <script>fairySec.config.originalPageLength = matches[2]
-disableTrigger("fairySec get config page length")</script>
+          <name>pagelength</name>
+          <script>deleteLine()
+tempLineTrigger(1, 3, [[deleteLine()]])</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
-          <mStayOpen>0</mStayOpen>
+          <mStayOpen>5</mStayOpen>
           <mCommand></mCommand>
           <packageName></packageName>
           <mFgColor>#ff0000</mFgColor>
@@ -705,11 +705,32 @@ disableTrigger("fairySec get config page length")</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>Your current pagelength: (\d+)</string>
+            <string>Pagelength is the maximum number of lines</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>1</integer>
+            <integer>2</integer>
           </regexCodePropertyList>
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>fairySec set config page length</name>
+            <script>fairySec.config.originalPageLength = matches[2]
+disableTrigger("fairySec get config page length")</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+              <string>Your current pagelength: (\d+)</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+              <integer>1</integer>
+            </regexCodePropertyList>
+          </Trigger>
         </Trigger>
       </TriggerGroup>
     </TriggerGroup>
@@ -734,19 +755,38 @@ if matches[2] ~= nil then
 end
 
 local function getActivityArgs(args)
-  local _, _, timestamp, uniqueAppend = string.find(args, "(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s*(%w*)")
-  if uniqueAppend == "" then uniqueAppend = nil else uniqueAppend = string.trim(uniqueAppend) end
-  local _, endIndex, trackedType = string.find(args, "%((%a+)%)")
+  local uniqueId = nil
+  local endIndex, uniqueAppend, timestamp, trackedType
+  _, endIndex, timestamp = string.find(args, "^(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)")
+  if timestamp == nil then
+    timestamp = os.date("!%Y/%m/%d %H:%M:%S", getEpoch())
+    _, endIndex, uniqueAppend, trackedType = string.find(args, "(%w*%s?%((%a+)%))%s+")
+    if trackedType ~= nil then
+      uniqueId = timestamp.." "..uniqueAppend
+    end
+  else
+    _, endIndex, uniqueId, timestamp, trackedType = string.find(args, "((%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s+%w*%s?%((%a+)%))%s*")
+    echo(timestamp)
+  end
   if endIndex == nil then
     endIndex = 0
   end
+
   local descNames = string.split(string.sub(args, endIndex + 1), ":")
   local names = string.trim(table.remove(descNames, table.size(descNames)))
   if names == "" then names = nil end
   local desc = string.trim(table.concat(descNames)):title()
   if desc == "" then desc = nil end
 
-  return timestamp, uniqueAppend, trackedType, desc, names
+  return timestamp, uniqueId, trackedType, desc, names
+end
+
+local function getGatherArgs(args)
+  local year
+  if args ~= nil then
+    _, _, year = string.find(args, "[fF][oO][rR]%s*(%d+)%s*[cC][oO]?[eE]")
+  end
+  return year
 end
 
 local function getReportArgs(args)
@@ -768,7 +808,9 @@ local function getReportArgs(args)
   return person, year, orgCredits
 end
 
-if string.find(cmd, "instruct") then
+if string.find(cmd, "help") then
+  fairySec:showHelp()
+elseif string.find(cmd, "instruct") then
   fairySec:showInstructions()
 elseif cmd == "reset" then
   fairySec:reset()
@@ -779,40 +821,49 @@ elseif cmd == "save" then
 elseif cmd == "review" then
   fairySec.print:trackedActivities(args)
 elseif (cmd == "add" or cmd == "update") and args ~= nil then
-  local timestamp, uniqueAppend, trackedType, desc, names = getActivityArgs(args)
+  local timestamp, uniqueId, trackedType, desc, names = getActivityArgs(args)
   local activity = {
+    uniqueId = uniqueId,
     timestamp = timestamp,
     trackedType = trackedType,
     desc = desc,
     names = names,
   }
-  if uniqueAppend ~= nil then
-    activity.uniqueId = timestamp.." "..uniqueAppend.." "..trackedType
-  elseif timestamp ~= nil then
-    activity.uniqueId = timestamp.." "..trackedType
-  end
   if cmd == "update" then
     fairySec:updateActivity(activity, true)
   else
-    fairySec:addActivity(activity, "add", true)
+    fairySec:addActivity(activity, true)
   end
 elseif (cmd == "remove" or cmd == "delete") and args ~= nil then
-  local timestamp, uniqueAppend, trackedType, _, _ = getActivityArgs(args)
-  local uniqueId = nil
-  if uniqueAppend ~= nil then
-    uniqueId = timestamp.." "..uniqueAppend.." "..trackedType
-  elseif timestamp ~= nil then
-    uniqueId = timestamp.." "..trackedType
-  end
+  local timestamp, uniqueId, trackedType, desc, names = getActivityArgs(args)
+  echo(uniqueId)
   fairySec:deleteActivity(uniqueId, true)
+elseif (cmd == "orgpower") and args ~= nil then
+  local _, endIndex, operation = string.find(args, "^%s*(%w*)%s*")
+  local orgActivity = string.sub(args, endIndex + 1)
+  if operation == "update" then
+    fairySec:updateOrgPower(orgActivity)
+  elseif operation == "add" then
+    fairySec:addOrgPower(orgActivity)
+  elseif operation == "delete" then
+    fairySec:deleteOrgPower()
+  else
+    echo("FAIRYSEC ORGPOWER &lt;ADD|UPDATE&gt; &lt;summation from spreadsheet row&gt;\n"..
+    "FAIRYSEC ORGPOWER DELETE\n")
+  end
+elseif cmd == "gather" then
+  local year = getGatherArgs(args)
+  if year ~= nil then
+    fairySec:gather(tonumber(year)) -- gather records and determine orgCredits
+  else
+    echo("FAIRYSEC GATHER FOR &lt;year&gt; CE\n")
+  end
 elseif cmd == "report" then
   local person, year, orgCredits = getReportArgs(args)
   if orgCredits ~= nil then
     fairySec.rewards.total.year = tonumber(year)
     orgCredits = tonumber(orgCredits)
     fairySec.rewards.total.yearlyCredits = orgCredits
-  elseif year ~= nil then
-    fairySec:gather(tonumber(year)) -- gather records and determine orgCredits
   else
     year = fairySec.rewards.total.year
     orgCredits = fairySec.rewards.total.yearlyCredits
@@ -824,13 +875,11 @@ elseif cmd == "report" then
   else
     fairySec:debug("report "..person)
   end
-  if not fairySec:isGathering() then
-    fairySec:report(person)
-  end
+  fairySec:report(person)
 elseif cmd == "rewards" then
   fairySec.print:orgDistribution()
 else
-  fairySec.showHelp()
+  fairySec.showIntro()
 end</script>
         <command></command>
         <packageName></packageName>
@@ -870,7 +919,7 @@ fairySec.HOUR_IN_SECONDS = 1 * 60 * 60
 
 
 function fairySec:isGathering()
-  return isActive("Fairy Secretary", "trigger") > 0
+  return isActive("Fairy Secretary", "trigger") &gt; 0
 end
 
 function fairySec:isRoughYearStart()
@@ -1045,23 +1094,30 @@ fairySec.config.debug = true
       <Script isActive="yes" isFolder="no">
         <name>fairySec functions</name>
         <packageName></packageName>
-        <script>function fairySec:showHelp()
-  fairySec:showIcon()
-  fairySec:showCmds()
-  fairySec:showIcon()
+        <script>function fairySec:showIntro()
   fairySec:showInstructions()
+  fairySec:showIcon()
+  echo("FAIRYSEC HELP\t - all commands\n");
+  fairySec:showLogCmds()
 end
  
-function fairySec:showCmds()
+function fairySec:showHelp()
+  fairySec:showIcon()
   echo("FAIRYSEC INSTRUCTIONS - instructions for generating report\n"..
-    "FAIRYSEC REPORT [&lt;person&gt;|ALL] [FOR &lt;year&gt; CE]\n"..
-    "\t\t - show tally for org member or all of the org\n"..
+    "FAIRYSEC GATHER FOR &lt;year&gt; CE\n"..
+    "FAIRYSEC ORGPOWER &lt;ADD|UPDATE&gt; &lt;summation from spreadsheet row&gt;\n"..
+    "FAIRYSEC ORGPOWER DELETE\n"..
+    "FAIRYSEC REPORT [&lt;person&gt;|ALL] - show tally for org member or all of the org\n"..
     "FAIRYSEC RESET\t - reset gathered logs\n"..
     "FAIRYSEC REVIEW [search] - show the gathered logs\n"..
     "FAIRYSEC SAVE\t - save the gathered logs to a file\n"..
     "FAIRYSEC REWARDS - after running report, show syntax for distributing rewards to org members\n"..
-    "\n"..
-    "FAIRYSEC ADD [timestamp] [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
+    "\n")
+    fairySec:showLogCmds()
+end
+
+function fairySec:showLogCmds()
+  echo("FAIRYSEC ADD [timestamp] [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
     "FAIRYSEC UPDATE &lt;timestamp&gt; [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
     "FAIRYSEC DELETE &lt;timestamp&gt; [uniqueAppend] (&lt;type&gt;)\n"..
     "\t - modify log entries. Timestamp must be in format yyyy/mm/dd hh:mm:ss for GMT.\n"..
@@ -1069,15 +1125,20 @@ function fairySec:showCmds()
 end
 
 function fairySec:showInstructions()
+  fairySec:showIcon()
   echo("Instructions:\n")
   echo("* If not already done, configure org-specific variables under 'fairySec variables' &gt; 'org specific'\n"..
-      "1. FAIRYSEC REPORT FOR &lt;year&gt; CE, Ex.\n"..
-      "\tFAIRYSEC REPORT FOR 672 CE\n"..
+      "1. FAIRYSEC GATHER FOR &lt;year&gt; CE, Ex.\n"..
+      "\tFAIRYSEC GATHER FOR 672 CE\n"..
       "2. FAIRYSEC REVIEW [search] and modify log entries as needed. Ex.\n"..
-      "\tFAIRYSEC ADD 2023/10/01 22:31:48 (otherConquest) Wild Nodes: Tirah\n"..
+      "\tFAIRYSEC UPDATE 2023/10/01 22:31:48 (power) empowered an Aspect - 5: Ayisdra\n"..
+      "\tFAIRYSEC ADD (ikon) Participation - 5: Esei\n"..
       "3. If any entries are missing, read logs to compare. There is an alias to help with this.\n"..
       "\tSEARCHLOG &lt;log name&gt; &lt;start weave&gt; &lt;end weave&gt; [query], Ex.\n"..
-      "\tSEARCHLOG GLOMDORING 21 8 timequake\n")
+      "\tSEARCHLOG GLOMDORING 21 8 timequake\n"..
+      "4. FAIRYSEC ORGPOWER ADD &lt;summation from spreadsheet row&gt;\n"..
+      "5. FAIRYSEC REPORT\n"..
+      "6. FAIRYSEC REWARDS\n")
   -- fairySec:showIcon()
   -- echo("For Coding:\n")
   -- echo("To update searching through logs, edit Triggers under Fairy Secretary\n")
@@ -1118,7 +1179,7 @@ function fairySec:reset()
   if io.exists(getMudletHomeDir().."/fairySecTracking.lua") then
     table.save(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
   end
-  fairySec:note("reset fairysec db")
+  fairySec:note("reset fairysec db", "x")
   fairySec.records = {}
   fairySec.rewards.total.year = ""
   fairySec.rewards.total.logDateStart = ""
@@ -1129,7 +1190,7 @@ function fairySec:save()
   if io.exists(getMudletHomeDir().."/fairySecTracking.lua") then
     table.save(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
   end
-  fairySec:note("saved fairysec db to file")
+  fairySec:note("saved fairysec db to file", "x")
 end
 
 local function setNewActivity(loggedActivity)
@@ -1158,7 +1219,11 @@ local function setNewActivity(loggedActivity)
   return newActivity
 end
 
-function fairySec:addActivity(loggedActivity, operation, showConfirmation)
+function fairySec:hasActivity(activity) 
+  return fairySec.db.log[activity.uniqueId] ~= nil
+end
+
+function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
   if loggedActivity.desc == nil then
     fairySec:error("desc of activity required")
   else
@@ -1178,14 +1243,15 @@ function fairySec:addActivity(loggedActivity, operation, showConfirmation)
     elseif fairySec.isGathering() and fairySec.rewards.total.logDateStart ~= "" and fairySec.rewards.total.logDateEnd ~= "" and
         ((not fairySec.isRoughYearStart() and loggedActivity.timestamp &lt;= fairySec.rewards.total.logDateStart) or
         (not fairySec.isRoughYearEnd() and loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd)) then
+      echo("isGathering!")
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
     else
       local activity = setNewActivity(loggedActivity)
  
-      if operation == "add" and fairySec.db.log[activity.uniqueId] ~= nil then
+      if operation == "add" and fairySec:hasActivity(activity) then
           fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] already exists.\n"..
             "Please use FAIRYSEC UPDATE to replace or FAIRYSEC DELETE to remove the activity")
-      elseif operation == "update" and fairySec.db.log[activity.uniqueId] == nil then
+      elseif operation == "update" and not fairySec:hasActivity(activity) then
           fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] does not exist.\n"..
             "Please use FAIRYSEC ADD to insert the activity")
       else
@@ -1205,11 +1271,15 @@ function fairySec:addActivity(loggedActivity, operation, showConfirmation)
   end
 end
 
+function fairySec:addActivity(loggedActivity, showConfirmation)
+  return fairySec:_addActivity(loggedActivity, "add", showConfirmation)
+end
+
 function fairySec:updateActivity(activity, showConfirmation)
   if activity.uniqueId == nil then
     fairySec:error("log activity must be identified by uniqueId for update")
   elseif fairySec.db.log[activity.uniqueId] then
-    fairySec:addActivity(activity, "update", showConfirmation)
+    fairySec:_addActivity(activity, "update", showConfirmation)
   else
     fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] does not exist for update")
   end
@@ -1245,8 +1315,8 @@ function fairySec:warningMemberNotFound(name)
   return fairySec:warning("Member by name of "..name:title().." not found")
 end
 
-function fairySec:note(message)
-  return note(message)
+function fairySec:note(message, icon)
+  return note(message, icon)
 end
 
 function fairySec:warning(message)
@@ -1539,6 +1609,7 @@ function fairySec.print:record(record)
       elseif type == "culture" then
         printTypesIn(record, {"library", "stage"})
       else
+        echo("\n")
         for _, activity in ipairs(record[type]) do
           echo(activity.formattedDesc.."\n")
         end
@@ -1722,17 +1793,12 @@ function fairySec.orgRecord:getFormattedStringAndReward(activity)
   elseif trackedType == "library" then
     getFormattedStringAndRewardOfLibrary(activity)
   elseif trackedType == "power" then
-    if string.find(activity.desc, "empowered") then
+    _, _, reward = string.find(activity.desc, "- (%d+)")
+    if reward ~= nil then
       formattedString = activity.desc
-      reward = fairySec.rewards.empower -- empowered aspect
+      reward = tonumber(reward)
     else
-      _, _, reward = string.find(activity.desc, "- (%d+)")
-      if reward ~= nil then
-        formattedString = activity.desc
-        reward = tonumber(reward)
-      else
-        fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
-      end
+      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
     end
   elseif trackedType == "ikon" then
     _, _, reward = string.find(activity.desc, "- (%d+)")
@@ -1892,7 +1958,8 @@ function fairySec.orgRecord:echoTallyErrorsAndWarnings()
   for _, warning in pairs(fairySec.db.tallyWarning) do
     fairySec:warning(warning)
   end
-end</script>
+end
+</script>
           <eventHandlerList />
         </Script>
         <ScriptGroup isActive="yes" isFolder="yes">
@@ -1936,13 +2003,19 @@ function fairySec:gatherLogs()
       send("config pagelength "..250)
       fairySec:searchLog(fairySec.orgPolicy.name, weaveStart, weaveEnd)
       fairySec:searchLog("pointlog", weaveStart, weaveEnd)
+      fairySec:searchLog("powerlog", weaveStart - 5, weaveEnd + 5)
     end
   )
   tempTimer(0.4,
     function()
       disableTrigger("Fairy Secretary")
-      send("config pagelength "..fairySec.config.originalPageLength)
-      fairySec:report("all")
+      fairySec:save()
+      fairySec:note("gathering logs completed for "..gameYear, "x")
+      send(" config pagelength "..fairySec.config.originalPageLength)
+      -- Glomdoring custom
+      fairySec:note("FAIRYSEC REVIEW [search] and modify log entries as needed")
+      fairySec:note("FAIRYSEC REPORT")
+      fairySec:note("FAIRYSEC REWARDS")
     end
   )
 end</script>
