@@ -1558,7 +1558,7 @@ function fairySec.print:footer(total)
 
   local formattedMemberCredits = " --"
   if total.yearlyCredits &gt; 0 then
-    formattedMemberCredits = tostring(total.memberCredits)
+    formattedMemberCredits = string.format("%3d", total.memberCredits)
   end
   echo(formattedMemberCredits.." credits distributed to Members\n")
 
