@@ -1524,7 +1524,6 @@ function fairySec.print:record(record)
       echo(fairySec.orgPolicy.labels[type]..": ")
       if type == "timequake" then
         echo("("..table.size(record[type])..")\n")
-        printTypesIn(record, {type})
       elseif type == "design" then
         echo("("..table.size(record[type])..")\n")
         printTypesIn(record, {type})
@@ -1560,7 +1559,7 @@ function fairySec.print:footer(total)
 
   local formattedMemberCredits = " --"
   if total.yearlyCredits &gt; 0 then
-    formattedMemberCredits = tostring(total.memberCredits)
+    formattedMemberCredits = string.format("%3d", total.memberCredits)
   end
   echo(formattedMemberCredits.." credits distributed to Members\n")
 
