@@ -1243,7 +1243,6 @@ function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
     elseif fairySec.isGathering() and fairySec.rewards.total.logDateStart ~= "" and fairySec.rewards.total.logDateEnd ~= "" and
         ((not fairySec.isRoughYearStart() and loggedActivity.timestamp &lt;= fairySec.rewards.total.logDateStart) or
         (not fairySec.isRoughYearEnd() and loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd)) then
-      echo("isGathering!")
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
     else
       local activity = setNewActivity(loggedActivity)
