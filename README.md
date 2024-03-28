@@ -6,7 +6,7 @@ Download the raw of FairySec.xml. In Mudlet, select Packages and Install New Pac
 
 # Instructions
 Note: If not already done, configure org-specific variables under 'fairySec variables' > 'org specific'
-1. FAIRYSEC GATHER FOR &lt;year&gt; CE, Ex."
+1. FAIRYSEC GATHER FOR &lt;year&gt; CE, Ex.
 ```
 FAIRYSEC GATHER FOR 672 CE
 ```
