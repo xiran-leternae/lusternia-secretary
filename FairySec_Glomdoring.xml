@@ -1424,9 +1424,15 @@ function fairySec:getParty(participatingString)
   return members
 end
 
+function fairySec:searchLogHelp()
+  echo("SEARCHLOG &lt;log&gt; &lt;oldWeave&gt; &lt;recentWeave&gt; [search]\n")
+  echo("ex. SEARCHLOG POINTLOG 30 0 design\n")
+end
+
 function fairySec:searchLog(logName, weaveStart, weaveEnd, query)
 
-  local searchLogCmd, fullSearchCmd
+  local searchLogCmd, searchWeaveCmd
+  local allWeavesCmdList = {}
   
   if logName == "power" or logName == "powerlog" then
     searchLogCmd = "powerlog"
@@ -1438,23 +1444,35 @@ function fairySec:searchLog(logName, weaveStart, weaveEnd, query)
     searchLogCmd = "revlog"
   else
     searchLogCmd = "readlog "..logName
-  end 
-  
-  fullSearchCmd = searchLogCmd.." 0 "..weaveStart
-  if query then
-    fullSearchCmd = fullSearchCmd.." "..query
   end
+
+  if weaveStart and weaveEnd then
+    weaveStart = tonumber(weaveStart)
+    weaveEnd = tonumber(weaveEnd)
+    if weaveStart &lt; weaveEnd then
+       echo("oldWeave should be greater than recentWeave.\n")
+       fairySec:searchLogHelp()
+       return
+    end
+  end
+  
+  searchWeaveCmd = searchLogCmd.." 0 "..weaveStart
+  if query then
+    searchWeaveCmd = searchWeaveCmd.." "..query
+  end
+  table.insert(allWeavesCmdList, searchWeaveCmd)
   weaveStart = weaveStart - 1
   
   local index
   for index = weaveStart, weaveEnd,-1 do
-    fullSearchCmd = fullSearchCmd.."; "..searchLogCmd.." 0 "..index
+    searchWeaveCmd = searchLogCmd.." 0 "..index
     if query then
-      fullSearchCmd = fullSearchCmd.." "..query
+      searchWeaveCmd = searchWeaveCmd.." "..query
     end
+    table.insert(allWeavesCmdList, searchWeaveCmd)
   end
 
-  send(fullSearchCmd)
+  send(table.concat(allWeavesCmdList, getCommandSeparator()))
 end</script>
           <eventHandlerList />
         </Script>
