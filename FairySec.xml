@@ -1482,6 +1482,7 @@ if not fairySec.print then
   fairySec.print = {}
 end
 
+-- helper function concatentating activity for text search
 local function concatActivity(activity)
   return activity.uniqueId.." "..
     activity.timestamp.." "..
@@ -1490,6 +1491,7 @@ local function concatActivity(activity)
     activity.names
 end
 
+-- print of tracked activities on FAIRYSEC REVIEW
 function fairySec.print:trackedActivities(searchQuery)
   local trackedActivities = fairySec.db.log
   local year = fairySec.rewards.total.year
@@ -1531,7 +1533,7 @@ function fairySec.print:trackedActivities(searchQuery)
   echo("====End of Tracked Activities====\n\n")
 end
 
-
+-- org-specific print functions for FAIRYSEC REPORT
 function fairySec.print:org(asSummary)
   fairySec.print:header(fairySec.rewards.total)
   fairySec.print:hr()
@@ -1654,6 +1656,9 @@ function fairySec.print:footer(total)
   echo(tostring(total.memberCredits + total.guildCredits).." Total Distributed\n")
 end
 
+-- end org-specific print functions for FAIRYSEC REPORT
+
+-- org-specific print functions for FAIRYSEC REWARDS
 function fairySec.print:orgDistribution()
   local total = fairySec.rewards.total
 
@@ -1665,7 +1670,8 @@ function fairySec.print:orgDistribution()
   end
   -- guild
   echo("COMMUNE CREDITS TRANSFER "..total.guildCredits.." TO "..fairySec.orgPolicy.leader.." "..total.year.." CE guild distribution.\n")
-end</script>
+end
+-- end org-specific print functions for FAIRYSEC REWARDS</script>
           <eventHandlerList />
         </Script>
         <Script isActive="yes" isFolder="no">
@@ -1946,6 +1952,8 @@ function fairySec.orgRecord:tallyPowerSubTotalOf(record)
   
   return record.subtotals.power
 end
+
+-- end org-specific record functions
 
 function fairySec.orgRecord:getSubTotal(type, record)
   return record.subtotals[type]
