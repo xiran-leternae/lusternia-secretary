@@ -550,7 +550,7 @@ fairySec:addActivity(loggedDesign)</script>
           </Trigger>
         </TriggerGroup>
         <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>library tracking</name>
+          <name>library stage tracking</name>
           <script></script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -579,7 +579,7 @@ local author = matches[6]
 
 local loggedLibrary = {
   timestamp = matches[2],
-  trackedType = "library",
+  trackedType = "audit",
   desc = weight.." points - "..desc,
   names = author
 }
@@ -612,7 +612,7 @@ if author == nil then author = "" end
 
 local loggedLibrary = {
   timestamp = matches[2],
-  trackedType = "library",
+  trackedType = "audit",
   desc = contestType.." Prestige - "..desc,
   names = author
 }
@@ -1625,6 +1625,7 @@ function fairySec.print:record(record)
         )..")\n")
         printTypesIn(record, {"revolt", "aetherflare", "otherConquest"})
       elseif type == "culture" then
+        echo("\n")
         printTypesIn(record, {"library", "stage"})
       else
         echo("\n")
@@ -1782,7 +1783,7 @@ local function getFormattedStringAndRewardOfLibrary(activity)
     end
   end
   if points == nil and prestige == nil then
-    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
   end
 end
 
@@ -1812,17 +1813,10 @@ function fairySec.orgRecord:getFormattedStringAndReward(activity)
   elseif trackedType == "otherConquest" then
     formattedString = activity.desc
     reward = fairySec.rewards.otherConquest
-  elseif trackedType == "library" then
-    getFormattedStringAndRewardOfLibrary(activity)
-  elseif trackedType == "power" then
-    _, _, reward = string.find(activity.desc, "- (%d+)")
-    if reward ~= nil then
-      formattedString = activity.desc
-      reward = tonumber(reward)
-    else
-      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
-    end
-  elseif trackedType == "ikon" then
+  elseif trackedType == "library" or
+      trackedType == "stage" or
+      trackedType == "power" or
+      trackedType == "ikon" then
     _, _, reward = string.find(activity.desc, "- (%d+)")
     if reward ~= nil then
       formattedString = activity.desc
