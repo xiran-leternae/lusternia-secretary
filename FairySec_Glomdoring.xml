@@ -67,6 +67,7 @@ local loggedActivity = {
   trackedType = "audit",
   names = ""
 }
+
 if not fairySec:hasActivity(loggedActivity) then fairySec:addActivity(loggedActivity) end
 
 if (fairySec.rewards.total.logDateStart ~= "" and fairySec.isRoughYearStart() and
@@ -82,6 +83,9 @@ if (fairySec.rewards.total.logDateEnd ~= "" and fairySec.isRoughYearEnd() and
   fairySec.rewards.total.yearlyCredits = tonumber(yearlyCredits)
   fairySec:debug("setting logDateEnd "..logDate)
   fairySec:debug("setting yearlyCredits "..logDate)
+elseif (fairySec.rewards.total.logDateEnd == logDate and not fairySec.isRoughYearEnd()) then
+  -- presumes full end date is within log and both org and pointlog read
+  raiseEvent("fairySecEndGatherLogs")
 end
 </script>
           <triggerType>0</triggerType>
@@ -112,6 +116,7 @@ local loggedActivity = {
   trackedType = "audit",
   names = ""
 }
+
 fairySec:addActivity(loggedActivity)</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -163,6 +168,7 @@ if not (string.find(descLowercase, "domoth:") or
     trackedType = "audit",
     names = ""
   }
+
   fairySec:addActivity(loggedActivity)
 end
 </script>
@@ -200,6 +206,7 @@ end
   desc = matches[3],
   names = ""
 }
+
 fairySec:addActivity(loggedIkon)</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -247,6 +254,7 @@ local loggedPower = {
   desc = matches[4].." - "..fairySec.rewards.empower,
   names = matches[3]
 }
+
 fairySec:addActivity(loggedPower)</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
@@ -1087,7 +1095,10 @@ fairySec.config.warningColor = "&lt;gold&gt;"
 fairySec.config.errorColor = "&lt;tomato&gt;"
 fairySec.config.debug = true
 
--- fairySec.config.originalPageLength</script>
+-- fairySec.config.originalPageLength
+
+fairySec.config.gatherLogsStartTime = 0.1
+fairySec.config.gatherLogsEndTime = 0.4</script>
           <eventHandlerList />
         </Script>
       </Script>
@@ -1144,6 +1155,20 @@ function fairySec:showInstructions()
   -- echo("To update searching through logs, edit Triggers under Fairy Secretary\n")
   -- echo("To update display, edit Scripts: \n\t'fairySec print functions' and org specific variables\n")
   -- echo("To update rewards, edit Scripts: \n\t'fairySec tally functions' and org specific variables\n")
+end
+
+
+function fairySec:showGatherInstructions()
+  -- Glomdoring custom
+  fairySec:note("FAIRYSEC REVIEW [search] and modify log entries as needed")
+  fairySec:note("FAIRYSEC ADD (&lt;type&gt;) &lt;description&gt; - &lt;credits&gt;: &lt;names&gt; log entries as needed, e.g.,\n"..
+    "\tFAIRYSEC ADD (power) empowered three Aspects - 45: Exeryte\n"..
+    "\tFAIRYSEC ADD (ikon) First Place - 10: Xenthos\n"..
+    "\tFAIRYSEC ADD (ikon) Participation - 5: Tirah, Esei\n"..
+    "\tFAIRYSEC ADD (library) #18000 Book Title - 25: Esei")
+  fairySec:note("FAIRYSEC ORGPOWER ADD &lt;summation from spreadsheet row&gt;")
+  fairySec:note("FAIRYSEC REPORT")
+  fairySec:note("FAIRYSEC REWARDS")
 end
 
 function fairySec:gather(year)
@@ -1223,6 +1248,18 @@ function fairySec:hasActivity(activity)
   return fairySec.db.log[activity.uniqueId] ~= nil
 end
 
+function fairySec:isWithinRewardYear(logDate)
+  if fairySec.isGathering() and
+    fairySec.rewards.total.logDateStart ~= "" and
+    fairySec.rewards.total.logDateEnd ~= "" and
+    ((not fairySec.isRoughYearStart() and logDate &lt; fairySec.rewards.total.logDateStart) or
+    (not fairySec.isRoughYearEnd() and logDate &gt; fairySec.rewards.total.logDateEnd)) then
+    return false
+  else
+    return true
+  end
+end
+
 function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
   if loggedActivity.desc == nil then
     fairySec:error("desc of activity required")
@@ -1240,9 +1277,7 @@ function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
       fairySec:error("unrecognised trackedType of "..loggedActivity.trackedType.." on activity: "..loggedActivity.desc)
     elseif loggedActivity.names == nil then
       fairySec:error("names required on activity: "..loggedActivity.desc)
-    elseif fairySec.isGathering() and fairySec.rewards.total.logDateStart ~= "" and fairySec.rewards.total.logDateEnd ~= "" and
-        ((not fairySec.isRoughYearStart() and loggedActivity.timestamp &lt;= fairySec.rewards.total.logDateStart) or
-        (not fairySec.isRoughYearEnd() and loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd)) then
+    elseif not fairySec:isWithinRewardYear(loggedActivity.timestamp) then
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
     else
       local activity = setNewActivity(loggedActivity)
@@ -2051,33 +2086,30 @@ function fairySec:gatherLogs()
   end
   if weaveStart &gt; 30 then
     weaveStart = 30
-    fairySec.orgRecord:addWarning("start date of "..gameYear.." may be beyond org logs")
+    fairySec:warning("start date of "..gameYear.." may be beyond org logs")
   end
   if weaveEnd &lt; 0 then 
     weaveEnd = 0
-    fairySec.orgRecord:addWarning("end date of "..gameYear.." may be in future")
+    tempTimer(fairySec.config.gatherLogsEndTime * 2,
+      function()
+        if (fairySec.isRoughYearEnd()) then
+          fairySec:warning("end date of "..gameYear.." may be in future")
+          raiseEvent("fairySecEndGatherLogs")
+        end
+      end
+    )
   end
   
   fairySec:setOriginalPageLength()
-  tempTimer(0.1,
+  tempTimer(fairySec.config.gatherLogsStartTime,
     function()
       send("config pagelength "..250)
       fairySec:searchLog(fairySec.orgPolicy.name, weaveStart, weaveEnd)
-      fairySec:searchLog("pointlog", weaveStart, weaveEnd)
-      fairySec:searchLog("powerlog", weaveStart - 5, weaveEnd + 5)
-    end
-  )
-  tempTimer(0.4,
-    function()
-      disableTrigger("Fairy Secretary")
-      fairySec:save()
-      fairySec:note("gathering logs completed for "..gameYear, "x")
-      send(" config pagelength "..fairySec.config.originalPageLength)
-      -- Glomdoring custom
-      fairySec:note("FAIRYSEC REVIEW [search] and modify log entries as needed")
-      fairySec:note("FAIRYSEC ORGPOWER ADD &lt;summation from spreadsheet row&gt;")
-      fairySec:note("FAIRYSEC REPORT")
-      fairySec:note("FAIRYSEC REWARDS")
+      -- because pointlog does not have blank weave logs, i.e., "No activity" entries,
+      -- we must search more logs to ensure it includes this year
+      fairySec:searchLog("pointlog", weaveStart, 0)
+      -- below is disabled since Glomdoring uses entries in the org log
+      -- fairySec:searchLog("powerlog", weaveStart - 5, weaveEnd + 5)
     end
   )
 end</script>
@@ -2093,6 +2125,46 @@ end</script>
   send("config pagelength")
 end</script>
             <eventHandlerList />
+          </Script>
+          <Script isActive="yes" isFolder="no">
+            <name>fairySecEndGatherLogs</name>
+            <packageName></packageName>
+            <script>function fairySecEndGatherLogs()
+  fairySec:endGatherLogs()
+end
+
+function fairySec:endGatherLogs()
+  local gameYear = fairySec.rewards.total.year
+
+  tempTimer(fairySec.config.gatherLogsEndTime,
+    function()
+      disableTrigger("Fairy Secretary")
+      fairySec:trimGatheredLogs()
+      fairySec:save()
+      fairySec:note("gathering logs completed for "..gameYear, "x")
+      send(" config pagelength "..fairySec.config.originalPageLength)
+      -- Glomdoring custom
+      fairySec:showGatherInstructions()
+    end
+  )
+end
+
+
+-- some entries may be before actual start; trim these out
+function fairySec:trimGatheredLogs()
+  local trackedActivities = fairySec.db.log
+
+  for uniqueId, activity in spairs(trackedActivities) do
+    if activity.timestamp &lt; fairySec.rewards.total.logDateStart then
+      fairySec:deleteActivity(uniqueId)
+    else
+      break
+    end
+  end
+end</script>
+            <eventHandlerList>
+              <string>fairySecEndGatherLogs</string>
+            </eventHandlerList>
           </Script>
         </ScriptGroup>
       </Script>
