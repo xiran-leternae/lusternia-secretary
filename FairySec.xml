@@ -966,6 +966,8 @@ fairySec.db = fairySec.db or {["log"] = {}, ["convertedDate"] = {}}
   -- convertedDate for holding log timestamp (year-first format) map to gameDate
 if io.exists(getMudletHomeDir().."/fairySecTracking.lua") then
   table.load(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
+else
+  table.save(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
 end
 
 fairySec.loggedActivitySchema = {
