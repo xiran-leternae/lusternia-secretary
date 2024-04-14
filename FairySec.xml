@@ -893,18 +893,33 @@ else
 end</script>
         <command></command>
         <packageName></packageName>
-        <regex>(?i)^f(?:airy)?s(?:ec)?\s?(\w+)?\s*(.*)$</regex>
+        <regex>(?i)^f(?:airy)?s(?:ec)?\s*(\w+)?\s*(.*)$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>searchlog</name>
-        <script>local logName = matches[2]
-local weaveStart = matches[3]
-local weaveEnd = matches[4]
-local query = matches[5]
-fairySec:searchLog(logName, weaveStart, weaveEnd, query)</script>
+        <script>local args = nil
+if matches[2] ~= nil and string.trim(matches[2]) ~= "" then
+  args = string.trim(matches[2])
+end
+-- get search log args
+local logName, weaveStart, weaveEnd, query
+
+_, endIndex, logName, weaveStart, weaveEnd = string.find(args, "^(%w+)%s+(%d+)%s+(%d+)%s*")
+
+if logName == "" then logName = nil end
+if weaveStart == "" then weaveStart = nil end
+if weaveEnd == "" then weaveEnd = nil end
+if weaveEnd ~= nil then query = string.trim(string.sub(args, endIndex + 1)) end
+
+-- search logs
+if logName ~= nil and weaveStart ~= nil and weaveEnd ~= nil then
+  fairySec:searchLog(logName, weaveStart, weaveEnd, query)
+else
+  fairySec:searchLogHelp()
+end</script>
         <command></command>
         <packageName></packageName>
-        <regex>^searchlog (\w+)\s?(\d+\s?)(\d+\s?)((?:\w+\s?)+)?$</regex>
+        <regex>(?i)^searchlog\s+(.*)$</regex>
       </Alias>
     </AliasGroup>
   </AliasPackage>
