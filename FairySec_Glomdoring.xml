@@ -766,7 +766,6 @@ local function getActivityArgs(args)
     end
   else
     _, endIndex, uniqueId, timestamp, trackedType = string.find(args, "((%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s+%w*%s?%((%a+)%))%s*")
-    echo(timestamp)
   end
   if endIndex == nil then
     endIndex = 0
@@ -836,7 +835,6 @@ elseif (cmd == "add" or cmd == "update") and args ~= nil then
   end
 elseif (cmd == "remove" or cmd == "delete") and args ~= nil then
   local timestamp, uniqueId, trackedType, desc, names = getActivityArgs(args)
-  echo(uniqueId)
   fairySec:deleteActivity(uniqueId, true)
 elseif (cmd == "orgpower") and args ~= nil then
   local _, endIndex, operation = string.find(args, "^%s*(%w*)%s*")
