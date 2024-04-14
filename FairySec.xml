@@ -1221,6 +1221,7 @@ function fairySec:reset()
   fairySec.rewards.total.year = ""
   fairySec.rewards.total.logDateStart = ""
   fairySec.rewards.total.logDateEnd = ""
+  fairySec.orgRecord:clearTallyErrorsAndWarnings()
 end
 
 function fairySec:save()
