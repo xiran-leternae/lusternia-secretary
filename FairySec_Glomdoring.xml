@@ -295,7 +295,9 @@ fairySec:addActivity(loggedPower)</script>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>timequake tally</name>
-            <script>fairySec:sendLogDate(matches[2]) -- convert date
+            <script>if fairySec:isWithinRewardYear(matches[2]) then
+  fairySec:sendLogDate(matches[2]) -- convert date
+end
 
 local loggedQuake = {
   timestamp = matches[2],
@@ -343,7 +345,9 @@ fairySec:addActivity(loggedQuake)</script>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>domoth tally</name>
-            <script>fairySec:sendLogDate(matches[2]) -- convert date
+            <script>if fairySec:isWithinRewardYear(matches[2]) then
+  fairySec:sendLogDate(matches[2]) -- convert date
+end
 
 local loggedDomoth = {
   timestamp = matches[2],
