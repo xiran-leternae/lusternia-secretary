@@ -1293,8 +1293,25 @@ function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
           fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] does not exist.\n"..
             "Please use FAIRYSEC ADD to insert the activity")
       else
+        if operation == "add" and not fairySec:isGathering() and
+            (loggedActivity.trackedType == "timequake" or loggedActivity.trackedType == "domoth") then
+          if (loggedActivity.timestamp &lt; fairySec.rewards.total.logDateStart or loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd) then
+            fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] is outside of gathered year.\n"..
+              "Please use FAIRYSEC ADD &lt;log date within year&gt; ("..loggedActivity.trackedType..") &lt;description&gt;: &lt;names&gt; to insert the activity")
+            return
+          else
+            enableTrigger("Fairy Secretary")
+            fairySec:sendLogDate(loggedActivity.timestamp) -- convert date
+            tempTimer(fairySec.config.gatherLogsStartTime,
+              function()
+                disableTrigger("Fairy Secretary")
+              end
+            )
+          end
+        end
+
         if showConfirmation and operation == "add" then
-            fairySec:note("added log activity with uniqueId [\""..activity.uniqueId.."\"]")
+          fairySec:note("added log activity with uniqueId [\""..activity.uniqueId.."\"]")
         elseif showConfirmation and operation == "update" then
           fairySec:note("updated log activity with uniqueId [\""..activity.uniqueId.."\"]")
         elseif operation == "update" then
