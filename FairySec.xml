@@ -971,10 +971,10 @@ fairySec.loggedActivitySchema = {
           <script>--- org-specific rewards in terms of marks/credits
 fairySec.rewards = {
   ["timequake"] = 3,
-  ["domoth"] = 5,
   ["revolt"] = 5,
   ["aetherflare"] = 5,
   ["otherConquest"] = 5,
+  ["domoth"] = fairySec.rewards.otherConquest,
   ["design"] = 15,
   ["prestige"] = 60,
   ["empower"] = 10, -- empowering the Aspects/Elemental Lords
@@ -993,10 +993,9 @@ fairySec.orgPolicy = {
   ["name"] = "",
   ["leader"] = "",
 -- 'types' for key list in-order when iterating
-  ["types"] = {"timequake", "domoth", "conquest", "design", "culture", "power", "ikon"},
+  ["types"] = {"timequake", "conquest", "design", "culture", "power", "ikon"},
   ["labels"] = {
     ["timequake"] = "Timequakes",
-    ["domoth"] = "Domoth",
     ["conquest"] = "Conquest Activities",
     ["design"] = "Designs",
     ["culture"] = "Library and Stage",
@@ -1659,16 +1658,14 @@ function fairySec.print:record(record)
       elseif type == "design" then
         echo("("..table.size(record[type])..")\n")
         printTypesIn(record, {type})
-      elseif type == "domoth" then 
-        echo("("..table.size(record[type])..")\n")
-        printTypesIn(record, {type})
       elseif type == "conquest" then
         echo("("..(
+          table.size(record["domoth"]) +
           table.size(record["revolt"]) +
           table.size(record["aetherflare"]) +
           table.size(record["otherConquest"])
         )..")\n")
-        printTypesIn(record, {"revolt", "aetherflare", "otherConquest"})
+        printTypesIn(record, {"domoth", "revolt", "aetherflare", "otherConquest"})
       elseif type == "culture" then
         echo("\n")
         printTypesIn(record, {"library", "stage"})
