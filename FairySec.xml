@@ -848,19 +848,6 @@ elseif (cmd == "add" or cmd == "update") and args ~= nil then
 elseif (cmd == "remove" or cmd == "delete") and args ~= nil then
   local timestamp, uniqueId, trackedType, desc, names = getActivityArgs(args)
   fairySec:deleteActivity(uniqueId, true)
-elseif (cmd == "orgpower") and args ~= nil then
-  local _, endIndex, operation = string.find(args, "^%s*(%w*)%s*")
-  local orgActivity = string.sub(args, endIndex + 1)
-  if operation == "update" then
-    fairySec:updateOrgPower(orgActivity)
-  elseif operation == "add" then
-    fairySec:addOrgPower(orgActivity)
-  elseif operation == "delete" then
-    fairySec:deleteOrgPower()
-  else
-    echo("FAIRYSEC ORGPOWER &lt;ADD|UPDATE&gt; &lt;summation from spreadsheet row&gt;\n"..
-    "FAIRYSEC ORGPOWER DELETE\n")
-  end
 elseif cmd == "gather" then
   local year = getGatherArgs(args)
   if year ~= nil then
@@ -1087,9 +1074,6 @@ fairySec.recordSchema = {
 -- { ["formattedDesc"] = string, ["reward"] = number }
 
 -- additional saved data specific to org
-if not fairySec.db.orgPowerIds then
-  fairySec.db.orgPowerIds = {}
-end
 if not fairySec.db.orgCulture then
   fairySec.db.orgCulture = {}
 end
@@ -1135,8 +1119,6 @@ function fairySec:showHelp()
   fairySec:showIcon()
   echo("FAIRYSEC INSTRUCTIONS - instructions for generating report\n"..
     "FAIRYSEC GATHER FOR &lt;year&gt; CE\n"..
-    "FAIRYSEC ORGPOWER &lt;ADD|UPDATE&gt; &lt;summation from spreadsheet row&gt;\n"..
-    "FAIRYSEC ORGPOWER DELETE\n"..
     "FAIRYSEC REPORT [&lt;person&gt;|ALL] - show tally for org member or all of the org\n"..
     "FAIRYSEC RESET\t - reset gathered logs\n"..
     "FAIRYSEC REVIEW [search] - show the gathered logs\n"..
@@ -1160,15 +1142,12 @@ function fairySec:showInstructions()
   echo("* If not already done, configure org-specific variables under 'fairySec variables' &gt; 'org specific'\n"..
       "1. FAIRYSEC GATHER FOR &lt;year&gt; CE, Ex.\n"..
       "\tFAIRYSEC GATHER FOR 672 CE\n"..
-      "2. FAIRYSEC REVIEW [search] and modify log entries as needed. Ex.\n"..
-      "\tFAIRYSEC UPDATE 2023/10/01 22:31:48 (power) empowered an Aspect - 5: Ayisdra\n"..
-      "\tFAIRYSEC ADD (ikon) Participation - 5: Esei\n"..
+      "2. FAIRYSEC REVIEW [search] and modify log entries as needed.\n"..
       "3. If any entries are missing, read logs to compare. There is an alias to help with this.\n"..
       "\tSEARCHLOG &lt;log name&gt; &lt;start weave&gt; &lt;end weave&gt; [query], Ex.\n"..
-      "\tSEARCHLOG GLOMDORING 21 8 timequake\n"..
-      "4. FAIRYSEC ORGPOWER ADD &lt;summation from spreadsheet row&gt;\n"..
-      "5. FAIRYSEC REPORT\n"..
-      "6. FAIRYSEC REWARDS\n")
+      "\tSEARCHLOG SERENWILDE 21 8 timequake\n"..
+      "4. FAIRYSEC REPORT\n"..
+      "5. FAIRYSEC REWARDS\n")
   -- fairySec:showIcon()
   -- echo("For Coding:\n")
   -- echo("To update searching through logs, edit Triggers under Fairy Secretary\n")
