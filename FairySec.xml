@@ -2,7 +2,7 @@
 <!DOCTYPE MudletPackage>
 <MudletPackage version="1.001">
   <TriggerPackage>
-    <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+    <TriggerGroup isActive="no" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
       <name>Fairy Secretary</name>
       <script></script>
       <triggerType>0</triggerType>
@@ -56,19 +56,119 @@ fairySec:addConvertedDate(logDate, matches[5].." "..matches[6], matches[7])</scr
           </regexCodePropertyList>
         </Trigger>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>audit</name>
+          <name>log reward year date</name>
+          <script>local logDate = matches[2]
+local desc = matches[3]
+local yearlyCredits = matches[4]
+local loggedActivity = {
+  uniqueId = logDate.." ".."rewardAudit audit",
+  timestamp = logDate,
+  desc = desc,
+  trackedType = "audit",
+  names = ""
+}
+
+if not fairySec:hasActivity(loggedActivity) then fairySec:addActivity(loggedActivity) end
+
+if (fairySec.rewards.total.logDateStart ~= "" and fairySec.isRoughYearStart() and
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) + fairySec.HOUR_IN_SECONDS) then
+  fairySec.rewards.total.logDateStart = logDate
+  fairySec:debug("setting logDateStart "..logDate)
+end
+if (fairySec.rewards.total.logDateEnd ~= "" and fairySec.isRoughYearEnd() and
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
+  fairySec.rewards.total.logDateEnd = logDate
+  fairySec.rewards.total.yearlyCredits = tonumber(yearlyCredits)
+  fairySec:debug("setting logDateEnd "..logDate)
+  fairySec:debug("setting yearlyCredits "..logDate)
+elseif (fairySec.rewards.total.logDateEnd == logDate and not fairySec.isRoughYearEnd()) then
+  -- presumes full end date is within log and both org and pointlog read
+  raiseEvent("fairySecEndGatherLogs")
+end
+</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand></mCommand>
+          <packageName></packageName>
+          <mFgColor>#aaff7f</mFgColor>
+          <mBgColor>transparent</mBgColor>
+          <mSoundFile></mSoundFile>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has been (awarded (\d+) credits for the yearly competition)</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>audit pointlog</name>
           <script>local logDate = matches[2]
 local desc = matches[3]
 local descLowercase = desc:lower()
-if not (string.find(descLowercase, "&gt; participated in domoth") or
-    (string.find(descLowercase, "&gt; participated in") and (string.find(descLowercase, "revolt") or string.find(descLowercase, "flare"))) or
-    string.find(descLowercase, "&gt; participated in wilde?%s?nodes")) then
+local loggedActivity = {
+  timestamp = logDate,
+  desc = desc,
+  trackedType = "audit",
+  names = ""
+}
+
+fairySec:addActivity(loggedActivity)</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>0</mStayOpen>
+          <mCommand></mCommand>
+          <packageName></packageName>
+          <mFgColor>#ffd700</mFgColor>
+          <mBgColor>transparent</mBgColor>
+          <mSoundFile></mSoundFile>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Village Revolt - the Village of \w+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Village Revolt \- the Village of \w+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored 50 points - (Directing a prize-winning production.*)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Submitted a stage production.*)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Aetherflare - (?:\w+\s?)+)$</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in aetherflare - (?:\w+\s?)+)$</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Wildnodes)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Wildnodes)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Village Revolt - Ptoma Hive)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Village Revolt - Ptoma Hive)</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>0</integer>
+            <integer>0</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>audit org</name>
+          <script>local logDate = matches[2]
+local desc = matches[3]
+local descLowercase = desc:lower()
+if not (string.find(descLowercase, "domoth:") or
+    string.find(descLowercase, "revolts?:") or
+    string.find(descLowercase, "flares?:") or
+    string.find(descLowercase, "wilde?%s?nodes:")) then
   local loggedActivity = {
     timestamp = logDate,
     desc = desc,
     trackedType = "audit",
     names = ""
   }
+
   fairySec:addActivity(loggedActivity)
 end
 </script>
@@ -83,13 +183,11 @@ end
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ \&gt; (?:[ \/0-9A-Za-z,\(\)\.\:\-'#])+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ \&gt; .+)</string>
             <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ communefavoured \w+ for: (?:[ 0-9A-Za-z,\(\)\.\:\-'])+)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Won Village Revolt - the Village of \w+)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Participated in Village Revolt \- the Village of \w+)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ has deposited .*)</string>
             <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ donated .*)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored 50 points - (Directing a prize-winning production.*)</string>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Submitted a stage production.*)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - (\w+ activated a colossus .*)</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>1</integer>
@@ -97,40 +195,9 @@ end
             <integer>1</integer>
             <integer>1</integer>
             <integer>1</integer>
-            <integer>0</integer>
-            <integer>0</integer>
           </regexCodePropertyList>
         </Trigger>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>audit orgCredits reward</name>
-          <script>local logDate = matches[2]
-local desc = matches[3]
-local loggedActivity = {
-  uniqueId = logDate.." ".."reward audit",
-  timestamp = logDate,
-  desc = desc,
-  trackedType = "audit",
-  names = ""
-}
-fairySec:addActivity(loggedActivity)</script>
-          <triggerType>0</triggerType>
-          <conditonLineDelta>0</conditonLineDelta>
-          <mStayOpen>0</mStayOpen>
-          <mCommand></mCommand>
-          <packageName></packageName>
-          <mFgColor>#ff0000</mFgColor>
-          <mBgColor>#ffff00</mBgColor>
-          <mSoundFile></mSoundFile>
-          <colorTriggerFgColor>#000000</colorTriggerFgColor>
-          <colorTriggerBgColor>#000000</colorTriggerBgColor>
-          <regexCodeList>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has been (awarded \d+ credits for the yearly competition)</string>
-          </regexCodeList>
-          <regexCodePropertyList>
-            <integer>1</integer>
-          </regexCodePropertyList>
-        </Trigger>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>audit ikon reward</name>
           <script>local loggedIkon = {
   uniqueId = matches[2].." ikon"..matches[4].." audit",
@@ -139,14 +206,15 @@ fairySec:addActivity(loggedActivity)</script>
   desc = matches[3],
   names = ""
 }
+
 fairySec:addActivity(loggedIkon)</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
           <mStayOpen>0</mStayOpen>
           <mCommand></mCommand>
           <packageName></packageName>
-          <mFgColor>#ff0000</mFgColor>
-          <mBgColor>#ffff00</mBgColor>
+          <mFgColor>#ffd700</mFgColor>
+          <mBgColor>transparent</mBgColor>
           <mSoundFile></mSoundFile>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
@@ -156,81 +224,6 @@ fairySec:addActivity(loggedIkon)</script>
           <regexCodePropertyList>
             <integer>1</integer>
           </regexCodePropertyList>
-        </Trigger>
-        <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>power minister tracking on</name>
-          <script>local trackingYear = tonumber(fairySec.rewards.total.year)
-if tonumber(multimatches[2][2]) == trackingYear then
-  for _, uniqueId in ipairs(fairySec.db.orgPowerIds) do
-    fairySec:deleteActivity(uniqueId)
-  end
-  fairySec.db.orgPowerIds = {}
-  enableTrigger("fairySec power tally")
-else
-  disableTrigger("fairySec power tally")
-end</script>
-          <triggerType>0</triggerType>
-          <conditonLineDelta>2</conditonLineDelta>
-          <mStayOpen>30</mStayOpen>
-          <mCommand></mCommand>
-          <packageName></packageName>
-          <mFgColor>#ff0000</mFgColor>
-          <mBgColor>#ffff00</mBgColor>
-          <mSoundFile></mSoundFile>
-          <colorTriggerFgColor>#000000</colorTriggerFgColor>
-          <colorTriggerBgColor>#000000</colorTriggerBgColor>
-          <regexCodeList>
-            <string>Yearly tallies for power and visitors</string>
-            <string>(\d+)\s+Power\s+Bards\/Scholars</string>
-          </regexCodeList>
-          <regexCodePropertyList>
-            <integer>2</integer>
-            <integer>1</integer>
-          </regexCodePropertyList>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="yes" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-            <name>fairySec power tally</name>
-            <script>local timestamp = os.date("!%Y/%m/%d %H:%M:%S", getEpoch())
-local name = matches[2]
-
-if tonumber(matches[3]) &gt; 0 then
-  local loggedMoonhartPower = {
-    timestamp = timestamp,
-    trackedType = "power",
-    desc = "Moonhart - "..matches[3],
-    names = name,
-    uniqueId = timestamp.." "..name.."Moonhart".." power"
-  }
-  table.insert(fairySec.db.orgPowerIds, loggedMoonhartPower.uniqueId)
-  fairySec:addActivity(loggedMoonhartPower)
-end
-if tonumber(matches[4]) &gt; 0 then
-  local loggedVisitorPower = {
-    timestamp = timestamp,
-    trackedType = "power",
-    desc = "Bards and Scholars - "..matches[4],
-    names = name,
-    uniqueId = timestamp.." "..name.."Visitor".." power"
-  }
-  table.insert(fairySec.db.orgPowerIds, loggedVisitorPower.uniqueId)
-  fairySec:addActivity(loggedVisitorPower)
-end</script>
-            <triggerType>0</triggerType>
-            <conditonLineDelta>0</conditonLineDelta>
-            <mStayOpen>0</mStayOpen>
-            <mCommand></mCommand>
-            <packageName></packageName>
-            <mFgColor>#aaff7f</mFgColor>
-            <mBgColor>transparent</mBgColor>
-            <mSoundFile></mSoundFile>
-            <colorTriggerFgColor>#000000</colorTriggerFgColor>
-            <colorTriggerBgColor>#000000</colorTriggerBgColor>
-            <regexCodeList>
-              <string>(\w+)\s*\-\s+(\d+)\s+(\d+)</string>
-            </regexCodeList>
-            <regexCodePropertyList>
-              <integer>1</integer>
-            </regexCodePropertyList>
-          </Trigger>
         </Trigger>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>power tracking</name>
@@ -258,9 +251,10 @@ end</script>
 local loggedPower = {
   timestamp = matches[2],
   trackedType = "power",
-  desc = matches[4],
+  desc = matches[4].." - "..fairySec.rewards.empower,
   names = matches[3]
 }
+
 fairySec:addActivity(loggedPower)</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
@@ -301,7 +295,9 @@ fairySec:addActivity(loggedPower)</script>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>timequake tally</name>
-            <script>fairySec:sendLogDate(matches[2]) -- convert date
+            <script>if fairySec:isWithinRewardYear(matches[2]) then
+  fairySec:sendLogDate(matches[2]) -- convert date
+end
 
 local loggedQuake = {
   timestamp = matches[2],
@@ -328,7 +324,7 @@ fairySec:addActivity(loggedQuake)</script>
             </regexCodePropertyList>
           </Trigger>
         </TriggerGroup>
-        <TriggerGroup isActive="no" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>domoth tracking</name>
           <script></script>
           <triggerType>0</triggerType>
@@ -342,16 +338,16 @@ fairySec:addActivity(loggedQuake)</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>Participated in domoth</string>
-            <string>Participated in Domoth</string>
+            <string>(d|D)omoth</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>0</integer>
-            <integer>0</integer>
+            <integer>1</integer>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>domoth tally</name>
-            <script>fairySec:sendLogDate(matches[2]) -- convert date
+            <script>if fairySec:isWithinRewardYear(matches[2]) then
+  fairySec:sendLogDate(matches[2]) -- convert date
+end
 
 local loggedDomoth = {
   timestamp = matches[2],
@@ -371,14 +367,14 @@ fairySec:addActivity(loggedDomoth)</script>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; (Participated in (?:d|D)omoth(?: upgrade)? - \w+)\:\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; (\w+ (?:d|D)omoth(?: upgrade)?)\:\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
             </regexCodePropertyList>
           </Trigger>
         </TriggerGroup>
-        <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>revolt</name>
           <script></script>
           <triggerType>0</triggerType>
@@ -392,12 +388,10 @@ fairySec:addActivity(loggedDomoth)</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>revolt</string>
-            <string>Revolt</string>
+            <string>(r|R)evolts?</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>0</integer>
-            <integer>0</integer>
+            <integer>1</integer>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>revolt tally</name>
@@ -419,14 +413,14 @@ fairySec:addActivity(loggedRevolt)</script>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; Participated in ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
             </regexCodePropertyList>
           </Trigger>
         </Trigger>
-        <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>aetherflare</name>
           <script></script>
           <triggerType>0</triggerType>
@@ -447,7 +441,7 @@ fairySec:addActivity(loggedRevolt)</script>
             <integer>0</integer>
             <integer>0</integer>
           </regexCodePropertyList>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>aetherflare tally</name>
             <script>local loggedFlare = {
   timestamp = matches[2],
@@ -462,13 +456,13 @@ fairySec:addActivity(loggedFlare)
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#ff0000</mFgColor>
-            <mBgColor>#ffff00</mBgColor>
+            <mFgColor>#aaff7f</mFgColor>
+            <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; Participated in ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>0</integer>
@@ -489,14 +483,12 @@ fairySec:addActivity(loggedFlare)
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>Participated in Wild</string>
-            <string>Participated in wild</string>
+            <string>(w|W)ild\s?(n|N)odes</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>0</integer>
-            <integer>0</integer>
+            <integer>1</integer>
           </regexCodePropertyList>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>wild nodes tally</name>
             <script>local loggedConquest = {
   timestamp = matches[2],
@@ -510,13 +502,13 @@ fairySec:addActivity(loggedConquest)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#ff0000</mFgColor>
-            <mBgColor>#ffff00</mBgColor>
+            <mFgColor>#aaff7f</mFgColor>
+            <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; (Participated in (?:w|W)ilde?\s?(?:n|N)odes)\:\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
@@ -569,8 +561,8 @@ fairySec:addActivity(loggedDesign)</script>
             </regexCodePropertyList>
           </Trigger>
         </TriggerGroup>
-        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-          <name>library tracking</name>
+        <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>library stage tracking</name>
           <script></script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -622,7 +614,7 @@ fairySec.db.orgCulture[bookId] = author</script>
               <integer>1</integer>
             </regexCodePropertyList>
           </Trigger>
-          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>library prestige tally</name>
             <script>local contestType = matches[3]
 local desc = matches[4]
@@ -642,8 +634,8 @@ fairySec:addActivity(loggedLibrary)</script>
             <mStayOpen>0</mStayOpen>
             <mCommand></mCommand>
             <packageName></packageName>
-            <mFgColor>#ff0000</mFgColor>
-            <mBgColor>#ffff00</mBgColor>
+            <mFgColor>#aaff7f</mFgColor>
+            <mBgColor>transparent</mBgColor>
             <mSoundFile></mSoundFile>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
@@ -656,12 +648,109 @@ fairySec:addActivity(loggedLibrary)</script>
           </Trigger>
         </Trigger>
       </TriggerGroup>
+      <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>fairySec set reward year date</name>
+        <script>local lusternianDate = matches[2].." "..matches[3]
+local lusternianYear = matches[4]
+local logDate = matches[7].."\/"..string.format("%02d",matches[5]).."\/"..string.format("%02d",matches[6])..
+  " "..string.format("%02d",matches[8])..matches[9]
+fairySec:addConvertedDate(logDate, lusternianDate, lusternianYear)
+
+if lusternianDate == "1 Estar" then
+  if tonumber(lusternianYear) == fairySec.rewards.total.year then
+    fairySec.rewards.total.logDateStart = logDate
+    fairySec:debug("setting rough logDateStart "..logDate)
+  elseif tonumber(lusternianYear) == fairySec.rewards.total.year + 1 then
+    fairySec.rewards.total.logDateEnd = logDate
+    fairySec:debug("setting rough logDateEnd "..logDate)
+  end
+ 
+  if fairySec.rewards.total.logDateStart ~= "" and fairySec.rewards.total.logDateEnd ~= "" then
+    raiseEvent("fairySecSetYearStartEnd")
+    disableTrigger("fairySec set reward year date")
+  end
+end</script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand></mCommand>
+        <packageName></packageName>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile></mSoundFile>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList>
+          <string> Lusternian date (\d+) (\w+), year (\d+) at midnight would be (\d+)\/(\d+)\/(\d{4}) at (\d+)(\:\d{2})</string>
+        </regexCodeList>
+        <regexCodePropertyList>
+          <integer>1</integer>
+        </regexCodePropertyList>
+      </Trigger>
+      <TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <name>fairySec config</name>
+        <script></script>
+        <triggerType>0</triggerType>
+        <conditonLineDelta>0</conditonLineDelta>
+        <mStayOpen>0</mStayOpen>
+        <mCommand></mCommand>
+        <packageName></packageName>
+        <mFgColor>#ff0000</mFgColor>
+        <mBgColor>#ffff00</mBgColor>
+        <mSoundFile></mSoundFile>
+        <colorTriggerFgColor>#000000</colorTriggerFgColor>
+        <colorTriggerBgColor>#000000</colorTriggerBgColor>
+        <regexCodeList />
+        <regexCodePropertyList />
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>pagelength</name>
+          <script>deleteLine()
+tempLineTrigger(1, 3, [[deleteLine()]])</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>0</conditonLineDelta>
+          <mStayOpen>5</mStayOpen>
+          <mCommand></mCommand>
+          <packageName></packageName>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile></mSoundFile>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Pagelength is the maximum number of lines</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+          </regexCodePropertyList>
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>fairySec set config page length</name>
+            <script>fairySec.config.originalPageLength = matches[2]
+disableTrigger("fairySec get config page length")</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#ff0000</mFgColor>
+            <mBgColor>#ffff00</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+              <string>Your current pagelength: (\d+)</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+              <integer>1</integer>
+            </regexCodePropertyList>
+          </Trigger>
+        </Trigger>
+      </TriggerGroup>
     </TriggerGroup>
   </TriggerPackage>
 
   <AliasPackage>
     <AliasGroup isActive="yes" isFolder="yes">
-      <name>FairySecretary</name>
+      <name>Fairy Secretary</name>
       <script></script>
       <command></command>
       <packageName></packageName>
@@ -678,19 +767,37 @@ if matches[2] ~= nil then
 end
 
 local function getActivityArgs(args)
-  local _, _, timestamp, uniqueAppend = string.find(args, "(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s*(%w*)")
-  if uniqueAppend == "" then uniqueAppend = nil else uniqueAppend = string.trim(uniqueAppend) end
-  local _, endIndex, trackedType = string.find(args, "%((%a+)%)")
+  local uniqueId = nil
+  local endIndex, uniqueAppend, timestamp, trackedType
+  _, endIndex, timestamp = string.find(args, "^(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)")
+  if timestamp == nil then
+    timestamp = os.date("!%Y/%m/%d %H:%M:%S", getEpoch())
+    _, endIndex, uniqueAppend, trackedType = string.find(args, "(%w*%s?%((%a+)%))%s+")
+    if trackedType ~= nil then
+      uniqueId = timestamp.." "..uniqueAppend
+    end
+  else
+    _, endIndex, uniqueId, timestamp, trackedType = string.find(args, "((%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s+%w*%s?%((%a+)%))%s*")
+  end
   if endIndex == nil then
     endIndex = 0
   end
+
   local descNames = string.split(string.sub(args, endIndex + 1), ":")
   local names = string.trim(table.remove(descNames, table.size(descNames)))
   if names == "" then names = nil end
   local desc = string.trim(table.concat(descNames)):title()
   if desc == "" then desc = nil end
 
-  return timestamp, uniqueAppend, trackedType, desc, names
+  return timestamp, uniqueId, trackedType, desc, names
+end
+
+local function getGatherArgs(args)
+  local year
+  if args ~= nil then
+    _, _, year = string.find(args, "[fF][oO][rR]%s*(%d+)%s*[cC][oO]?[eE]")
+  end
+  return year
 end
 
 local function getReportArgs(args)
@@ -703,7 +810,8 @@ local function getReportArgs(args)
     else
       person = string.trim(person)
     end
-    _, _, year, orgCredits = string.find(string.sub(args, endIndex + 1), "[fF][oO][rR]%s*(%d+)%s*[cC][oO]?[eE]%s*[wW][iI][tT][hH]%s*(%d+)%s*[cC][rR][eE][dD][iI][tT][sS]")
+    _, _, year = string.find(string.sub(args, endIndex + 1), "[fF][oO][rR]%s*(%d+)%s*[cC][oO]?[eE]")
+    _, _, orgCredits = string.find(string.sub(args, endIndex + 1), "[wW][iI][tT][hH]%s*(%d+)%s*[cC][rR][eE][dD][iI][tT][sS]")
   else
     person = "all"
   end
@@ -711,7 +819,9 @@ local function getReportArgs(args)
   return person, year, orgCredits
 end
 
-if string.find(cmd, "instruct") then
+if string.find(cmd, "help") then
+  fairySec:showHelp()
+elseif string.find(cmd, "instruct") then
   fairySec:showInstructions()
 elseif cmd == "reset" then
   fairySec:reset()
@@ -722,36 +832,33 @@ elseif cmd == "save" then
 elseif cmd == "review" then
   fairySec.print:trackedActivities(args)
 elseif (cmd == "add" or cmd == "update") and args ~= nil then
-  local timestamp, uniqueAppend, trackedType, desc, names = getActivityArgs(args)
+  local timestamp, uniqueId, trackedType, desc, names = getActivityArgs(args)
   local activity = {
+    uniqueId = uniqueId,
     timestamp = timestamp,
     trackedType = trackedType,
     desc = desc,
     names = names,
   }
-  if uniqueAppend ~= nil then
-    activity.uniqueId = timestamp.." "..uniqueAppend.." "..trackedType
-  elseif timestamp ~= nil then
-    activity.uniqueId = timestamp.." "..trackedType
-  end
   if cmd == "update" then
     fairySec:updateActivity(activity, true)
   else
-    fairySec:addActivity(activity, "add", true)
+    fairySec:addActivity(activity, true)
   end
 elseif (cmd == "remove" or cmd == "delete") and args ~= nil then
-  local timestamp, uniqueAppend, trackedType, _, _ = getActivityArgs(args)
-  local uniqueId = nil
-  if uniqueAppend ~= nil then
-    uniqueId = timestamp.." "..uniqueAppend.." "..trackedType
-  elseif timestamp ~= nil then
-    uniqueId = timestamp.." "..trackedType
-  end
+  local timestamp, uniqueId, trackedType, desc, names = getActivityArgs(args)
   fairySec:deleteActivity(uniqueId, true)
+elseif cmd == "gather" then
+  local year = getGatherArgs(args)
+  if year ~= nil then
+    fairySec:gather(tonumber(year)) -- gather records and determine orgCredits
+  else
+    echo("FAIRYSEC GATHER FOR &lt;year&gt; CE\n")
+  end
 elseif cmd == "report" then
   local person, year, orgCredits = getReportArgs(args)
   if orgCredits ~= nil then
-    fairySec.rewards.total.year = year
+    fairySec.rewards.total.year = tonumber(year)
     orgCredits = tonumber(orgCredits)
     fairySec.rewards.total.yearlyCredits = orgCredits
   else
@@ -760,39 +867,46 @@ elseif cmd == "report" then
   end
   if orgCredits ~= nil and orgCredits &gt; 0 then
     fairySec:debug("report "..person.." in "..year.." CE "..orgCredits.." credits")
+  elseif year ~= nil then
+    fairySec:debug("report "..person.." in "..year.." CE")
   else
     fairySec:debug("report "..person)
   end
-  if person ~= "all" and person ~= nil then
-    fairySec.orgRecord:setRecordFor(person)
-    fairySec.orgRecord:tallyTotalsFor(person)
-    fairySec.print:person(person)
-    fairySec:showIcon()
-    fairySec.orgRecord:echoTallyErrorsAndWarnings()
-  else -- all
-    fairySec.orgRecord:setOrgRecords()
-    fairySec.orgRecord:tallyOrgTotals(fairySec.rewards.total.yearlyCredits)
-    fairySec.print:org()
-    fairySec:showIcon()
-    fairySec.orgRecord:echoTallyErrorsAndWarnings()
-  end
+  fairySec:report(person)
+elseif cmd == "rewards" then
+  fairySec.print:orgDistribution()
 else
-  fairySec.showHelp()
+  fairySec.showIntro()
 end</script>
         <command></command>
         <packageName></packageName>
-        <regex>(?i)^f(?:airy)?s(?:ec)?\s?(\w+)?\s*(.*)$</regex>
+        <regex>(?i)^f(?:airy)?s(?:ec)?\s*(\w+)?\s*(.*)$</regex>
       </Alias>
       <Alias isActive="yes" isFolder="no">
         <name>searchlog</name>
-        <script>local logName = matches[2]
-local weaveStart = matches[3]
-local weaveEnd = matches[4]
-local query = matches[5]
-fairySec:searchLog(logName, weaveStart, weaveEnd, query)</script>
+        <script>local args = nil
+if matches[2] ~= nil and string.trim(matches[2]) ~= "" then
+  args = string.trim(matches[2])
+end
+-- get search log args
+local logName, weaveStart, weaveEnd, query
+
+_, endIndex, logName, weaveStart, weaveEnd = string.find(args, "^(%w+)%s+(%d+)%s+(%d+)%s*")
+
+if logName == "" then logName = nil end
+if weaveStart == "" then weaveStart = nil end
+if weaveEnd == "" then weaveEnd = nil end
+if weaveEnd ~= nil then query = string.trim(string.sub(args, endIndex + 1)) end
+
+-- search logs
+if logName ~= nil and weaveStart ~= nil and weaveEnd ~= nil then
+  fairySec:searchLog(logName, weaveStart, weaveEnd, query)
+else
+  fairySec:searchLogHelp()
+end</script>
         <command></command>
         <packageName></packageName>
-        <regex>^searchlog (\w+)\s?(\d+\s?)(\d+\s?)((?:\w+\s?)+)?$</regex>
+        <regex>(?i)^searchlog\s+(.*)$</regex>
       </Alias>
     </AliasGroup>
   </AliasPackage>
@@ -812,7 +926,21 @@ end</script>
   fairySec = {}
 end
 
-fairySec.isGathering = false
+fairySec.DAY_IN_SECONDS = 24 * 60 * 60
+fairySec.HOUR_IN_SECONDS = 1 * 60 * 60
+
+
+function fairySec:isGathering()
+  return isActive("Fairy Secretary", "trigger") &gt; 0
+end
+
+function fairySec:isRoughYearStart()
+  return string.len(fairySec.rewards.total.logDateStart) &lt; 19
+end
+
+function fairySec:isRoughYearEnd()
+  return string.len(fairySec.rewards.total.logDateEnd) &lt; 19
+end
 
 fairySec.tracking = {
   ["types"] = {"audit", "timequake", "domoth", "revolt", "aetherflare", "otherConquest",
@@ -825,6 +953,8 @@ fairySec.db = fairySec.db or {["log"] = {}, ["convertedDate"] = {}}
   -- convertedDate for holding log timestamp (year-first format) map to gameDate
 if io.exists(getMudletHomeDir().."/fairySecTracking.lua") then
   table.load(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
+else
+  table.save(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
 end
 
 fairySec.loggedActivitySchema = {
@@ -841,23 +971,27 @@ fairySec.loggedActivitySchema = {
           <script>--- org-specific rewards in terms of marks/credits
 fairySec.rewards = {
   ["timequake"] = 3,
-  ["domoth"] = 5,
   ["revolt"] = 5,
   ["aetherflare"] = 5,
   ["otherConquest"] = 5,
+  ["domoth"] = fairySec.rewards.otherConquest,
   ["design"] = 15,
   ["prestige"] = 60,
   ["empower"] = 10, -- empowering the Aspects/Elemental Lords
+  ["guild"] = 50, -- credits per guild
   ["total"] = {
     ["year"] = "",
     ["logDateStart"] = "",
     ["logDateEnd"] = "",
     ["yearlyCredits"] = 0,
-    ["memberCredits"] = 0
+    ["memberCredits"] = 0,
+    ["guildCredits"] = 50 * 3,
   },
 }
 
 fairySec.orgPolicy = {
+  ["name"] = "",
+  ["leader"] = "",
 -- 'types' for key list in-order when iterating
   ["types"] = {"timequake", "conquest", "design", "culture", "power", "ikon"},
   ["labels"] = {
@@ -927,6 +1061,7 @@ fairySec.recordSchema = {
   ["ikon"] = {},
   ["subtotals"] = {
     ["timequake"] = 0,
+    ["domoth"] = 0,
     ["conquest"] = 0,
     ["design"] = 0,
     ["culture"] = 0,
@@ -938,9 +1073,6 @@ fairySec.recordSchema = {
 -- { ["formattedDesc"] = string, ["reward"] = number }
 
 -- additional saved data specific to org
-if not fairySec.db.orgPowerIds then
-  fairySec.db.orgPowerIds = {}
-end
 if not fairySec.db.orgCulture then
   fairySec.db.orgCulture = {}
 end
@@ -963,29 +1095,40 @@ fairySec.config.showIcon = true
 fairySec.config.color = "&lt;PaleGreen&gt;"
 fairySec.config.warningColor = "&lt;gold&gt;"
 fairySec.config.errorColor = "&lt;tomato&gt;"
-fairySec.config.debug = true</script>
+fairySec.config.debug = true
+
+-- fairySec.config.originalPageLength
+
+fairySec.config.gatherLogsStartTime = 0.1
+fairySec.config.gatherLogsEndTime = 0.4</script>
           <eventHandlerList />
         </Script>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>fairySec functions</name>
         <packageName></packageName>
-        <script>function fairySec:showHelp()
-  fairySec:showIcon()
-  fairySec:showCmds()
-  fairySec:showIcon()
+        <script>function fairySec:showIntro()
   fairySec:showInstructions()
+  fairySec:showIcon()
+  echo("FAIRYSEC HELP\t - all commands\n");
+  fairySec:showLogCmds()
 end
  
-function fairySec:showCmds()
-  echo("FAIRYSEC INSTRUCTIONS - instructions for manually gathering logs\n"..
+function fairySec:showHelp()
+  fairySec:showIcon()
+  echo("FAIRYSEC INSTRUCTIONS - instructions for generating report\n"..
+    "FAIRYSEC GATHER FOR &lt;year&gt; CE\n"..
+    "FAIRYSEC REPORT [&lt;person&gt;|ALL] - show tally for org member or all of the org\n"..
     "FAIRYSEC RESET\t - reset gathered logs\n"..
     "FAIRYSEC REVIEW [search] - show the gathered logs\n"..
     "FAIRYSEC SAVE\t - save the gathered logs to a file\n"..
-    "FAIRYSEC REPORT [&lt;person&gt;|ALL] [FOR &lt;year&gt; CE WITH &lt;orgCredits&gt; CREDITS]\n"..
-    "\t\t - show tally for org member or all of the org\n"..
-    "\n"..
-    "FAIRYSEC ADD [timestamp] [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
+    "FAIRYSEC REWARDS - after running report, show syntax for distributing rewards to org members\n"..
+    "\n")
+    fairySec:showLogCmds()
+end
+
+function fairySec:showLogCmds()
+  echo("FAIRYSEC ADD [timestamp] [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
     "FAIRYSEC UPDATE &lt;timestamp&gt; [uniqueAppend] (&lt;type&gt;) &lt;desc&gt;: &lt;names&gt;\n"..
     "FAIRYSEC DELETE &lt;timestamp&gt; [uniqueAppend] (&lt;type&gt;)\n"..
     "\t - modify log entries. Timestamp must be in format yyyy/mm/dd hh:mm:ss for GMT.\n"..
@@ -993,17 +1136,17 @@ function fairySec:showCmds()
 end
 
 function fairySec:showInstructions()
+  fairySec:showIcon()
   echo("Instructions:\n")
   echo("* If not already done, configure org-specific variables under 'fairySec variables' &gt; 'org specific'\n"..
-      "1. Manually enable trigger group 'fairySec tracking'\n"..
-      "2. Read logs. There is an alias to help with this.\n"..
+      "1. FAIRYSEC GATHER FOR &lt;year&gt; CE, Ex.\n"..
+      "\tFAIRYSEC GATHER FOR 672 CE\n"..
+      "2. FAIRYSEC REVIEW [search] and modify log entries as needed.\n"..
+      "3. If any entries are missing, read logs to compare. There is an alias to help with this.\n"..
       "\tSEARCHLOG &lt;log name&gt; &lt;start weave&gt; &lt;end weave&gt; [query], Ex.\n"..
-      "\tSEARCHLOG GLOMDORING 21 8 timequake\n"..
-      "3. Manually disable trigger group 'fairySec tracking' when done\n"..
-      "4. FAIRYSEC REVIEW and modify log entries as needed. Ex.\n"..
-      "\tFAIRYSEC ADD 2023/10/01 22:31:48 (otherConquest) Wild Nodes: Jolanthe, Madungonga, Galaphyrae, Huskii, Xiran\n"..
-      "5. FAIRYSEC REPORT FOR &lt;year&gt; CE WITH &lt;orgCredits&gt; CREDITS, Ex.\n"..
-      "\tFAIRYSEC REPORT FOR 659 CE WITH 600 CREDITS\n")
+      "\tSEARCHLOG SERENWILDE 21 8 timequake\n"..
+      "4. FAIRYSEC REPORT\n"..
+      "5. FAIRYSEC REWARDS\n")
   -- fairySec:showIcon()
   -- echo("For Coding:\n")
   -- echo("To update searching through logs, edit Triggers under Fairy Secretary\n")
@@ -1011,39 +1154,59 @@ function fairySec:showInstructions()
   -- echo("To update rewards, edit Scripts: \n\t'fairySec tally functions' and org specific variables\n")
 end
 
-function fairySec:gather(year)
-  fairySec.rewards.total.year = year
-  fairySec.rewards.total.logDateStart = ""
-  fairySec.rewards.total.logDateEnd = ""
-  fairySec.records = {}
 
-  fairySec.isGathering = false
-  disableTrigger("fairySec tracking")
-  enableTrigger("fairySec get reward year date")
-  -- get year start and year end from log
-  local dayInMilliseconds = 24 * 60 * 60 * 1000
-  send("readlog serenwilde 0 21 yearly")
+function fairySec:showGatherInstructions()
+  fairySec:note("FAIRYSEC REVIEW [search] and modify log entries as needed with FAIRYSEC ADD or UPDATE")
+  fairySec:note("FAIRYSEC REPORT")
+  fairySec:note("FAIRYSEC REWARDS")
+end
+
+function fairySec:gather(year)
+  fairySec:reset()
+  fairySec.rewards.total.year = year
+
+  enableTrigger("Fairy Secretary")
+  enableTrigger("fairySec set reward year date")
+  send("date 1 estar "..year.." ce")
+  send("date 1 estar "..(year + 1).." ce")
+end
+
+function fairySec:report(person)
+  if person ~= "all" and person ~= nil then
+    fairySec.orgRecord:setRecordFor(person)
+    fairySec.orgRecord:tallyTotalsFor(person)
+    fairySec.print:person(person)
+    fairySec:showIcon()
+    fairySec.orgRecord:echoTallyErrorsAndWarnings()
+  else -- all
+    fairySec.orgRecord:setOrgRecords()
+    fairySec.orgRecord:tallyOrgTotals(fairySec.rewards.total.yearlyCredits)
+    fairySec.print:org()
+    fairySec:showIcon()
+    fairySec.orgRecord:echoTallyErrorsAndWarnings()
+  end
 end
 
 function fairySec:reset()
   fairySec.db.log = {}
   fairySec.db.convertedDate = {}
-  fairySec.isGathering = false
+  disableTrigger("Fairy Secretary")
   if io.exists(getMudletHomeDir().."/fairySecTracking.lua") then
     table.save(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
   end
-  fairySec:note("reset fairysec db")
+  fairySec:note("reset fairysec db", "x")
   fairySec.records = {}
   fairySec.rewards.total.year = ""
   fairySec.rewards.total.logDateStart = ""
   fairySec.rewards.total.logDateEnd = ""
+  fairySec.orgRecord:clearTallyErrorsAndWarnings()
 end
 
 function fairySec:save()
   if io.exists(getMudletHomeDir().."/fairySecTracking.lua") then
     table.save(getMudletHomeDir().."/fairySecTracking.lua", fairySec.db)
   end
-  fairySec:note("saved fairysec db to file")
+  fairySec:note("saved fairysec db to file", "x")
 end
 
 local function setNewActivity(loggedActivity)
@@ -1072,7 +1235,23 @@ local function setNewActivity(loggedActivity)
   return newActivity
 end
 
-function fairySec:addActivity(loggedActivity, operation, showConfirmation)
+function fairySec:hasActivity(activity) 
+  return fairySec.db.log[activity.uniqueId] ~= nil
+end
+
+function fairySec:isWithinRewardYear(logDate)
+  if fairySec.isGathering() and
+    fairySec.rewards.total.logDateStart ~= "" and
+    fairySec.rewards.total.logDateEnd ~= "" and
+    ((not fairySec.isRoughYearStart() and logDate &lt; fairySec.rewards.total.logDateStart) or
+    (not fairySec.isRoughYearEnd() and logDate &gt; fairySec.rewards.total.logDateEnd)) then
+    return false
+  else
+    return true
+  end
+end
+
+function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
   if loggedActivity.desc == nil then
     fairySec:error("desc of activity required")
   else
@@ -1089,22 +1268,37 @@ function fairySec:addActivity(loggedActivity, operation, showConfirmation)
       fairySec:error("unrecognised trackedType of "..loggedActivity.trackedType.." on activity: "..loggedActivity.desc)
     elseif loggedActivity.names == nil then
       fairySec:error("names required on activity: "..loggedActivity.desc)
-    elseif fairySec.isGathering and
-        ((fairySec.rewards.total.logDateStart ~= "" and loggedActivity.timestamp &lt;= fairySec.rewards.total.logDateStart) or
-        (fairySec.rewards.total.logDateEnd ~= "" and loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd)) then
+    elseif not fairySec:isWithinRewardYear(loggedActivity.timestamp) then
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
     else
       local activity = setNewActivity(loggedActivity)
  
-      if operation == "add" and fairySec.db.log[activity.uniqueId] ~= nil then
+      if operation == "add" and fairySec:hasActivity(activity) then
           fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] already exists.\n"..
             "Please use FAIRYSEC UPDATE to replace or FAIRYSEC DELETE to remove the activity")
-      elseif operation == "update" and fairySec.db.log[activity.uniqueId] == nil then
+      elseif operation == "update" and not fairySec:hasActivity(activity) then
           fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] does not exist.\n"..
             "Please use FAIRYSEC ADD to insert the activity")
       else
+        if operation == "add" and not fairySec:isGathering() and
+            (loggedActivity.trackedType == "timequake" or loggedActivity.trackedType == "domoth") then
+          if (loggedActivity.timestamp &lt; fairySec.rewards.total.logDateStart or loggedActivity.timestamp &gt; fairySec.rewards.total.logDateEnd) then
+            fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] is outside of gathered year.\n"..
+              "Please use FAIRYSEC ADD &lt;log date within year&gt; ("..loggedActivity.trackedType..") &lt;description&gt;: &lt;names&gt; to insert the activity")
+            return
+          else
+            enableTrigger("Fairy Secretary")
+            fairySec:sendLogDate(loggedActivity.timestamp) -- convert date
+            tempTimer(fairySec.config.gatherLogsStartTime,
+              function()
+                disableTrigger("Fairy Secretary")
+              end
+            )
+          end
+        end
+
         if showConfirmation and operation == "add" then
-            fairySec:note("added log activity with uniqueId [\""..activity.uniqueId.."\"]")
+          fairySec:note("added log activity with uniqueId [\""..activity.uniqueId.."\"]")
         elseif showConfirmation and operation == "update" then
           fairySec:note("updated log activity with uniqueId [\""..activity.uniqueId.."\"]")
         elseif operation == "update" then
@@ -1119,11 +1313,15 @@ function fairySec:addActivity(loggedActivity, operation, showConfirmation)
   end
 end
 
+function fairySec:addActivity(loggedActivity, showConfirmation)
+  return fairySec:_addActivity(loggedActivity, "add", showConfirmation)
+end
+
 function fairySec:updateActivity(activity, showConfirmation)
   if activity.uniqueId == nil then
     fairySec:error("log activity must be identified by uniqueId for update")
   elseif fairySec.db.log[activity.uniqueId] then
-    fairySec:addActivity(activity, "update", showConfirmation)
+    fairySec:_addActivity(activity, "update", showConfirmation)
   else
     fairySec:error("log activity with uniqueId [\""..activity.uniqueId.."\"] does not exist for update")
   end
@@ -1159,8 +1357,8 @@ function fairySec:warningMemberNotFound(name)
   return fairySec:warning("Member by name of "..name:title().." not found")
 end
 
-function fairySec:note(message)
-  return note(message)
+function fairySec:note(message, icon)
+  return note(message, icon)
 end
 
 function fairySec:warning(message)
@@ -1231,10 +1429,26 @@ end
 function fairySec:addConvertedDate(logDate, gameDate, gameYear)
   fairySec.db.convertedDate[logDate] = { ["date"] = gameDate, ["year"] = gameYear }
   local gameDate = fairySec.db.convertedDate[logDate]
-  fairySec:debug("adding convertedDate "..logDate.." = { date = "..gameDate.date..", year = "..gameDate.year.." }")
+  -- fairySec:debug("adding convertedDate "..logDate.." = { date = "..gameDate.date..", year = "..gameDate.year.." }")
   
   return gameDate
 end
+
+function fairySec:getOSTime(logDate)
+  local _, _, year, month, day, hour, min = string.find(logDate, "(%d%d%d%d)/(%d%d)/(%d%d) (%d%d):(%d%d)")
+  local time = os.time({
+    year = tonumber(year), 
+    month = tonumber(month),
+    day = tonumber(day),
+    hour = tonumber(hour),
+    min = tonumber(min)
+  })
+  -- fairySec:debug("os.time of "..time.." = { "..
+  --   "year = "..year..", month = "..month..", day = "..day..", hour = "..hour..", min = "..min..
+  --   " }")
+  return time
+end
+
 
 function fairySec:getGameDate(logDate)
   return fairySec.db.convertedDate[logDate].date
@@ -1251,9 +1465,15 @@ function fairySec:getParty(participatingString)
   return members
 end
 
+function fairySec:searchLogHelp()
+  echo("SEARCHLOG &lt;log&gt; &lt;oldWeave&gt; &lt;recentWeave&gt; [search]\n")
+  echo("ex. SEARCHLOG POINTLOG 30 0 design\n")
+end
+
 function fairySec:searchLog(logName, weaveStart, weaveEnd, query)
 
-  local searchLogCmd, fullSearchCmd
+  local searchLogCmd, searchWeaveCmd
+  local allWeavesCmdList = {}
   
   if logName == "power" or logName == "powerlog" then
     searchLogCmd = "powerlog"
@@ -1265,23 +1485,35 @@ function fairySec:searchLog(logName, weaveStart, weaveEnd, query)
     searchLogCmd = "revlog"
   else
     searchLogCmd = "readlog "..logName
-  end 
-  
-  fullSearchCmd = searchLogCmd.." 0 "..weaveStart
-  if query then
-    fullSearchCmd = fullSearchCmd.." "..query
   end
+
+  if weaveStart and weaveEnd then
+    weaveStart = tonumber(weaveStart)
+    weaveEnd = tonumber(weaveEnd)
+    if weaveStart &lt; weaveEnd then
+       echo("oldWeave should be greater than recentWeave.\n")
+       fairySec:searchLogHelp()
+       return
+    end
+  end
+  
+  searchWeaveCmd = searchLogCmd.." 0 "..weaveStart
+  if query then
+    searchWeaveCmd = searchWeaveCmd.." "..query
+  end
+  table.insert(allWeavesCmdList, searchWeaveCmd)
   weaveStart = weaveStart - 1
   
   local index
   for index = weaveStart, weaveEnd,-1 do
-    fullSearchCmd = fullSearchCmd.."; "..searchLogCmd.." 0 "..index
+    searchWeaveCmd = searchLogCmd.." 0 "..index
     if query then
-      fullSearchCmd = fullSearchCmd.." "..query
+      searchWeaveCmd = searchWeaveCmd.." "..query
     end
+    table.insert(allWeavesCmdList, searchWeaveCmd)
   end
 
-  send(fullSearchCmd)
+  send(table.concat(allWeavesCmdList, getCommandSeparator()))
 end</script>
           <eventHandlerList />
         </Script>
@@ -1293,6 +1525,7 @@ if not fairySec.print then
   fairySec.print = {}
 end
 
+-- helper function concatentating activity for text search
 local function concatActivity(activity)
   return activity.uniqueId.." "..
     activity.timestamp.." "..
@@ -1301,6 +1534,7 @@ local function concatActivity(activity)
     activity.names
 end
 
+-- print of tracked activities on FAIRYSEC REVIEW
 function fairySec.print:trackedActivities(searchQuery)
   local trackedActivities = fairySec.db.log
   local year = fairySec.rewards.total.year
@@ -1342,6 +1576,7 @@ function fairySec.print:trackedActivities(searchQuery)
   echo("====End of Tracked Activities====\n\n")
 end
 
+-- org-specific print functions for FAIRYSEC REPORT
 function fairySec.print:org(asSummary)
   fairySec.print:header(fairySec.rewards.total)
   fairySec.print:hr()
@@ -1365,9 +1600,9 @@ function fairySec.print:header(total)
   else
     year = year.." CE"
   end
-  echo("=================================\n"..
-    "= Distribution Marks for "..year.." =\n"..
-    "=================================\n"..
+  echo("===========================\n"..
+    "= Distribution for "..year.." =\n"..
+    "===========================\n"..
     "\n")
 
   echo("--------------\n"..
@@ -1376,6 +1611,18 @@ function fairySec.print:header(total)
     "\n")
   echo("Total Rewards to Distribute = "..total.memberCredits.."\n"..
     "Yearly Credits Earned = "..total.yearlyCredits.."\n\n")
+  fairySec.print:creditsPerGuild(total.yearlyCredits)
+end
+
+-- print credits for each guild
+function fairySec.print:creditsPerGuild(yearlyCredits)
+  local credits = fairySec.orgRecord:creditsPerGuild(yearlyCredits)
+  if credits == 0 then
+    credits = " --"
+  else
+    credits = tostring(credits)
+  end
+  echo(string.format("%3d", credits).." to be distributed to each guild\n")
 end
 
 -- print by person's name 
@@ -1404,27 +1651,69 @@ function fairySec.print:record(record)
   "\n")
   for _, type in ipairs(fairySec.orgPolicy.types) do
     if (fairySec.orgRecord:getSubTotal(type, record) &gt; 0) then
-      echo(fairySec.orgPolicy.labels[type]..":\n")
-      if type == "timequake" or type == "design" then
+      echo(fairySec.orgPolicy.labels[type]..": ")
+      if type == "timequake" then
+        echo("("..table.size(record[type])..")\n")
+        printTypesIn(record, {type})
+      elseif type == "design" then
+        echo("("..table.size(record[type])..")\n")
         printTypesIn(record, {type})
       elseif type == "conquest" then
-        printTypesIn(record, {"revolt", "domoth", "aetherflare", "otherConquest"})
+        echo("("..(
+          table.size(record["domoth"]) +
+          table.size(record["revolt"]) +
+          table.size(record["aetherflare"]) +
+          table.size(record["otherConquest"])
+        )..")\n")
+        printTypesIn(record, {"domoth", "revolt", "aetherflare", "otherConquest"})
       elseif type == "culture" then
+        echo("\n")
         printTypesIn(record, {"library", "stage"})
       else
+        echo("\n")
         for _, activity in ipairs(record[type]) do
           echo(activity.formattedDesc.."\n")
         end
       end
-      echo("Sub-Total CMR = "..fairySec.orgRecord:getSubTotal(type, record).."\n\n")
+      echo("Sub-Total = "..fairySec.orgRecord:getSubTotal(type, record).."\n\n")
     end
   end
   echo("Total Credits = "..fairySec.orgRecord:getTotal(record).." credits\n")
 end
 
 function fairySec.print:footer(total)
-  echo("Total Rewards to Distribute = "..total.memberCredits.."\n")
-end</script>
+  local formattedGuildCredits = " --"
+  if total.guildCredits &gt; 0 then
+    formattedGuildCredits = string.format("%3d", total.guildCredits)
+  end
+  echo(formattedGuildCredits.." credits distributed to Guilds\n")
+
+  local formattedMemberCredits = " --"
+  if total.yearlyCredits &gt; 0 then
+    formattedMemberCredits = string.format("%3d", total.memberCredits)
+  end
+  echo(formattedMemberCredits.." credits distributed to Members\n")
+
+  echo("---\n")
+  echo(tostring(total.memberCredits + total.guildCredits).." Total Distributed\n")
+end
+
+-- end org-specific print functions for FAIRYSEC REPORT
+
+-- org-specific print functions for FAIRYSEC REWARDS
+function fairySec.print:orgDistribution()
+  local total = fairySec.rewards.total
+
+  -- individual
+  for _, record in spairs(fairySec.records) do
+    local personCMR = fairySec.orgRecord:getTotal(record)
+    local personCredits = personCMR
+    echo("COMMUNE CREDITS TRANSFER "..personCredits.." TO "..record.name.." Rewards "..total.year.." CE\n")
+  end
+  -- guild
+  echo("COMMUNE CREDITS TRANSFER "..total.guildCredits.." TO "..fairySec.orgPolicy.leader.." "..total.year.." CE guild distribution.\n")
+end
+-- end org-specific print functions for FAIRYSEC REWARDS</script>
           <eventHandlerList />
         </Script>
         <Script isActive="yes" isFolder="no">
@@ -1526,7 +1815,7 @@ local function getFormattedStringAndRewardOfLibrary(activity)
   local prestigeType, points, bookId, title 
   _, _, points, bookId, title = string.find(activity.desc, "(%d+) points %- #(%d+) %- %w+ %- (.*)$")
   if points then
-    reward = tonumber(points) * 4
+    reward = tonumber(points) * fairySec.rewards.libraryWeight
     formattedString = "'"..title.."' (#"..bookId..") - "..reward
   else
     _, _, prestige, bookId, title = string.find(activity.desc, "(%w+ Prestige) %- #(%d+) %- (.*)%)$")      
@@ -1536,7 +1825,7 @@ local function getFormattedStringAndRewardOfLibrary(activity)
     end
   end
   if points == nil and prestige == nil then
-    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
   end
 end
 
@@ -1554,30 +1843,23 @@ function fairySec.orgRecord:getFormattedStringAndReward(activity)
     reward = fairySec.rewards.design
   elseif trackedType == "domoth" then
     local _, _, monthName = string.find(fairySec:getGameDate(activity.timestamp), "%d+ (%w+)")
-    local _, _, throne = string.find(activity.desc, "%- (%w+)")
+    local throne = string.match(activity.desc, "^(%w+)")
     formattedString = "Domoth - "..throne:title().." ("..monthName..")"
     reward = fairySec.rewards.domoth
-  elseif trackedType == "revolt" or trackedType == "aetherflare" then
-    formattedString, reward = getFormattedStringAndRewardWithSpheres(activity)
+  elseif trackedType == "revolt" then
+    formattedString = "Revolt"
+    reward = fairySec.rewards.revolt
+  elseif trackedType == "aetherflare" then
+    formattedString = "Flare"
+    reward = fairySec.rewards.aetherflare
   elseif trackedType == "otherConquest" then
     formattedString = activity.desc
     reward = fairySec.rewards.otherConquest
   elseif trackedType == "library" then
     getFormattedStringAndRewardOfLibrary(activity)
-  elseif trackedType == "power" then
-    if string.find(activity.desc, "empowered") then
-      formattedString = activity.desc
-      reward = fairySec.rewards.empower -- empowered aspect
-    else
-      _, _, reward = string.find(activity.desc, "- (%d+)")
-      if reward ~= nil then
-        formattedString = activity.desc
-        reward = tonumber(reward)
-      else
-        fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
-      end
-    end
-  elseif trackedType == "ikon" then
+  elseif trackedType == "stage" or
+      trackedType == "power" or
+      trackedType == "ikon" then
     _, _, reward = string.find(activity.desc, "- (%d+)")
     if reward ~= nil then
       formattedString = activity.desc
@@ -1596,12 +1878,22 @@ end
 
 -- tally
 function fairySec.orgRecord:tallyOrgTotals(yearlyCredits)
+  fairySec.rewards.total.guildCredits = fairySec.orgRecord:creditsPerGuild(yearlyCredits) * 3
+
   local memberCredits = 0
   for name, record in pairs(fairySec.records) do
     fairySec.orgRecord:tallyTotalsOf(record)
     memberCredits = memberCredits + record.total
   end
   fairySec.rewards.total.memberCredits = memberCredits
+end
+
+function fairySec.orgRecord:creditsPerGuild(yearlyCredits)
+  if yearlyCredits ~= nil then
+    return fairySec.rewards.guild
+  else
+    return 0
+  end
 end
 
 function fairySec.orgRecord:tallyTotalsFor(name)
@@ -1616,6 +1908,7 @@ end
 function fairySec.orgRecord:tallyTotalsOf(record)
   local total = 0
   total = fairySec.orgRecord:tallyTimequakeSubTotalOf(record) +
+  fairySec.orgRecord:tallyDomothSubTotalOf(record) +
   fairySec.orgRecord:tallyConquestSubTotalOf(record) +
   fairySec.orgRecord:tallyDesignSubTotalOf(record) +
   fairySec.orgRecord:tallyCultureSubTotalOf(record) +
@@ -1633,10 +1926,18 @@ function fairySec.orgRecord:tallyTimequakeSubTotalOf(record)
   return record.subtotals.timequake
 end
 
+function fairySec.orgRecord:tallyDomothSubTotalOf(record)
+  local domothSubTotal = table.size(record.domoth) * fairySec.rewards.domoth
+  
+  record.subtotals.domoth = domothSubTotal
+
+  return record.subtotals.domoth
+end
+
 function fairySec.orgRecord:tallyConquestSubTotalOf(record)
   local conquestSubTotal = 0
 
-  local conquestTypes = {"revolt", "domoth", "aetherflare", "otherConquest"}
+  local conquestTypes = {"revolt", "aetherflare", "otherConquest"}
   for _, type in ipairs(conquestTypes) do
     for _, activity in ipairs(record[type]) do
       conquestSubTotal = conquestSubTotal + activity.reward
@@ -1688,6 +1989,8 @@ function fairySec.orgRecord:tallyPowerSubTotalOf(record)
   return record.subtotals.power
 end
 
+-- end org-specific record functions
+
 function fairySec.orgRecord:getSubTotal(type, record)
   return record.subtotals[type]
 end
@@ -1716,9 +2019,118 @@ function fairySec.orgRecord:echoTallyErrorsAndWarnings()
   for _, warning in pairs(fairySec.db.tallyWarning) do
     fairySec:warning(warning)
   end
-end</script>
+end
+</script>
           <eventHandlerList />
         </Script>
+        <ScriptGroup isActive="yes" isFolder="yes">
+          <name>fairySec sys</name>
+          <packageName></packageName>
+          <script></script>
+          <eventHandlerList />
+          <Script isActive="yes" isFolder="no">
+            <name>fairySecGatherLogs</name>
+            <packageName></packageName>
+            <script>function fairySecGatherLogs()
+  fairySec:gatherLogs()
+end
+
+function fairySec:gatherLogs()
+  local gameYear = fairySec.rewards.total.year
+
+  local weaveStart = math.ceil(
+    (os.time(os.date("!*t")) - fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS) / fairySec.DAY_IN_SECONDS
+  )
+  local weaveEnd = math.floor(
+    (os.time(os.date("!*t")) - fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) / fairySec.DAY_IN_SECONDS
+  )
+  fairySec:debug("weaveStart = "..weaveStart..", weaveEnd = "..weaveEnd)
+  if weaveEnd &gt; 30 or weaveStart &lt; 0 then
+    fairySec:error("year "..gameYear.." not in org logs")
+    return
+  end
+  if weaveStart &gt; 30 then
+    weaveStart = 30
+    fairySec:warning("start date of "..gameYear.." may be beyond org logs")
+  end
+  if weaveEnd &lt; 0 then 
+    weaveEnd = 0
+    tempTimer(fairySec.config.gatherLogsEndTime * 2,
+      function()
+        if (fairySec.isRoughYearEnd()) then
+          fairySec:warning("end date of "..gameYear.." may be in future")
+          raiseEvent("fairySecEndGatherLogs")
+        end
+      end
+    )
+  end
+  
+  fairySec:setOriginalPageLength()
+  tempTimer(fairySec.config.gatherLogsStartTime,
+    function()
+      send("config pagelength "..250)
+      fairySec:searchLog(fairySec.orgPolicy.name, weaveStart, weaveEnd)
+      -- because pointlog does not have blank weave logs, i.e., "No activity" entries,
+      -- we must search more logs to ensure it includes this year
+      fairySec:searchLog("pointlog", weaveStart, 0)
+      fairySec:searchLog("powerlog", weaveStart - 5, weaveEnd + 5)
+      fairySec:showGatherInstructions()
+    end
+  )
+end</script>
+            <eventHandlerList>
+              <string>fairySecSetYearStartEnd</string>
+            </eventHandlerList>
+          </Script>
+          <Script isActive="yes" isFolder="no">
+            <name>fairySec set originalPageLength</name>
+            <packageName></packageName>
+            <script>function fairySec:setOriginalPageLength()
+  enableTrigger("fairySec set config page length")
+  send("config pagelength")
+end</script>
+            <eventHandlerList />
+          </Script>
+          <Script isActive="yes" isFolder="no">
+            <name>fairySecEndGatherLogs</name>
+            <packageName></packageName>
+            <script>function fairySecEndGatherLogs()
+  fairySec:endGatherLogs()
+end
+
+function fairySec:endGatherLogs()
+  local gameYear = fairySec.rewards.total.year
+
+  tempTimer(fairySec.config.gatherLogsEndTime,
+    function()
+      disableTrigger("Fairy Secretary")
+      fairySec:trimGatheredLogs()
+      fairySec:save()
+      fairySec:note("gathering logs completed for "..gameYear, "x")
+      send(" config pagelength "..fairySec.config.originalPageLength)
+      fairySec:showGatherInstructions()
+    end
+  )
+end
+
+
+-- some entries may be before actual start; trim these out
+function fairySec:trimGatheredLogs()
+  local trackedActivities = fairySec.db.log
+
+  for uniqueId, activity in spairs(trackedActivities) do
+    if activity.timestamp &lt; fairySec.rewards.total.logDateStart then
+      fairySec:deleteActivity(uniqueId)
+    else
+      break
+    end
+  end
+end</script>
+            <eventHandlerList>
+              <string>fairySecEndGatherLogs</string>
+            </eventHandlerList>
+          </Script>
+        </ScriptGroup>
       </Script>
       <Script isActive="yes" isFolder="no">
         <name>fairySec anomaly distribution</name>
