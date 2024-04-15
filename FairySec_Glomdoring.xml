@@ -1089,9 +1089,6 @@ fairySec.recordSchema = {
 -- { ["formattedDesc"] = string, ["reward"] = number }
 
 -- additional saved data specific to org
-if not fairySec.db.orgPowerIds then
-  fairySec.db.orgPowerIds = {}
-end
 if not fairySec.db.orgCulture then
   fairySec.db.orgCulture = {}
 end
@@ -2182,7 +2179,6 @@ function fairySec:endGatherLogs()
       fairySec:save()
       fairySec:note("gathering logs completed for "..gameYear, "x")
       send(" config pagelength "..fairySec.config.originalPageLength)
-      -- Glomdoring custom
       fairySec:showGatherInstructions()
     end
   )

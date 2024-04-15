@@ -31,6 +31,7 @@ FAIRYSEC INSTRUCTIONS - instructions for generating report
 FAIRYSEC GATHER FOR <year> CE
 FAIRYSEC ORGPOWER <ADD|UPDATE> <summation from spreadsheet row>
 FAIRYSEC ORGPOWER DELETE
+
 FAIRYSEC REPORT [<person>|ALL] - show tally for org member or all of the org
 FAIRYSEC RESET   - reset gathered logs
 FAIRYSEC REVIEW [search] - show the gathered logs
