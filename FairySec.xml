@@ -990,8 +990,8 @@ fairySec.rewards = {
 }
 
 fairySec.orgPolicy = {
-  ["name"] = "Glomdoring",
-  ["leader"] = "Tirah",  
+  ["name"] = "",
+  ["leader"] = "",
 -- 'types' for key list in-order when iterating
   ["types"] = {"timequake", "domoth", "conquest", "design", "culture", "power", "ikon"},
   ["labels"] = {
