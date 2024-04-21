@@ -200,13 +200,12 @@ end
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>audit ikon reward</name>
           <script>local loggedIkon = {
-  uniqueId = matches[2].." ikon"..matches[4].." audit",
+  uniqueId = matches[2].." ikon"..matches[4].." ikon",
   timestamp = matches[2],
-  trackedType = "audit",
+  trackedType = "ikon",
   desc = matches[3],
   names = ""
 }
-
 fairySec:addActivity(loggedIkon)</script>
           <triggerType>0</triggerType>
           <conditonLineDelta>0</conditonLineDelta>
@@ -220,10 +219,87 @@ fairySec:addActivity(loggedIkon)</script>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
             <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Taking (\w+) in the Annual Ikon tournament)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - ((Winning) the Annual Ikon tournament)</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>1</integer>
+            <integer>1</integer>
           </regexCodePropertyList>
+        </Trigger>
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+          <name>power minister tracking on</name>
+          <script>local trackingYear = tonumber(fairySec.rewards.total.year)
+if tonumber(multimatches[2][2]) == trackingYear then
+  for _, uniqueId in ipairs(fairySec.db.orgPowerIds) do
+    fairySec:deleteActivity(uniqueId)
+  end
+  fairySec.db.orgPowerIds = {}
+  enableTrigger("fairySec power tally")
+else
+  disableTrigger("fairySec power tally")
+end</script>
+          <triggerType>0</triggerType>
+          <conditonLineDelta>2</conditonLineDelta>
+          <mStayOpen>30</mStayOpen>
+          <mCommand></mCommand>
+          <packageName></packageName>
+          <mFgColor>#ff0000</mFgColor>
+          <mBgColor>#ffff00</mBgColor>
+          <mSoundFile></mSoundFile>
+          <colorTriggerFgColor>#000000</colorTriggerFgColor>
+          <colorTriggerBgColor>#000000</colorTriggerBgColor>
+          <regexCodeList>
+            <string>Yearly tallies for power and visitors</string>
+            <string>(\d+)\s+Power\s+Bards\/Scholars</string>
+          </regexCodeList>
+          <regexCodePropertyList>
+            <integer>2</integer>
+            <integer>1</integer>
+          </regexCodePropertyList>
+          <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="yes" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+            <name>fairySec power tally</name>
+            <script>local timestamp = os.date("!%Y/%m/%d %H:%M:%S", getEpoch())
+local name = matches[2]
+
+if tonumber(matches[3]) &gt; 0 then
+  local loggedMoonhartPower = {
+    timestamp = timestamp,
+    trackedType = "power",
+    desc = "Moonhart - "..matches[3],
+    names = name,
+    uniqueId = timestamp.." "..name.."Moonhart".." power"
+  }
+  table.insert(fairySec.db.orgPowerIds, loggedMoonhartPower.uniqueId)
+  fairySec:addActivity(loggedMoonhartPower)
+end
+if tonumber(matches[4]) &gt; 0 then
+  local loggedVisitorPower = {
+    timestamp = timestamp,
+    trackedType = "power",
+    desc = "Bards and Scholars - "..matches[4],
+    names = name,
+    uniqueId = timestamp.." "..name.."Visitor".." power"
+  }
+  table.insert(fairySec.db.orgPowerIds, loggedVisitorPower.uniqueId)
+  fairySec:addActivity(loggedVisitorPower)
+end</script>
+            <triggerType>0</triggerType>
+            <conditonLineDelta>0</conditonLineDelta>
+            <mStayOpen>0</mStayOpen>
+            <mCommand></mCommand>
+            <packageName></packageName>
+            <mFgColor>#aaff7f</mFgColor>
+            <mBgColor>transparent</mBgColor>
+            <mSoundFile></mSoundFile>
+            <colorTriggerFgColor>#000000</colorTriggerFgColor>
+            <colorTriggerBgColor>#000000</colorTriggerBgColor>
+            <regexCodeList>
+              <string>(\w+)\s*\-\s+(\d+)\s+(\d+)</string>
+            </regexCodeList>
+            <regexCodePropertyList>
+              <integer>1</integer>
+            </regexCodePropertyList>
+          </Trigger>
         </Trigger>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>power tracking</name>
@@ -251,10 +327,9 @@ fairySec:addActivity(loggedIkon)</script>
 local loggedPower = {
   timestamp = matches[2],
   trackedType = "power",
-  desc = matches[4].." - "..fairySec.rewards.empower,
+  desc = matches[4],
   names = matches[3]
 }
-
 fairySec:addActivity(loggedPower)</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
@@ -338,7 +413,7 @@ fairySec:addActivity(loggedQuake)</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>(d|D)omoth</string>
+            <string>(P|p)articipated in (d|D)omoth</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>1</integer>
@@ -367,7 +442,7 @@ fairySec:addActivity(loggedDomoth)</script>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; (\w+ (?:d|D)omoth(?: upgrade)?)\:\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:p|P)articipated in (?:d|D)omoth(?: upgrade)? - \w+)\:\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
@@ -413,7 +488,7 @@ fairySec:addActivity(loggedRevolt)</script>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; Participated in ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
@@ -434,12 +509,10 @@ fairySec:addActivity(loggedRevolt)</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>flare</string>
-            <string>Flare</string>
+            <string>(f|F)lare</string>
           </regexCodeList>
           <regexCodePropertyList>
-            <integer>0</integer>
-            <integer>0</integer>
+            <integer>1</integer>
           </regexCodePropertyList>
           <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
             <name>aetherflare tally</name>
@@ -449,6 +522,7 @@ fairySec:addActivity(loggedRevolt)</script>
   desc = matches[3],
   names = matches[4]
 }
+
 fairySec:addActivity(loggedFlare)
 </script>
             <triggerType>0</triggerType>
@@ -462,10 +536,10 @@ fairySec:addActivity(loggedFlare)
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; Participated in ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
-              <integer>0</integer>
+              <integer>1</integer>
             </regexCodePropertyList>
           </Trigger>
         </Trigger>
@@ -483,7 +557,7 @@ fairySec:addActivity(loggedFlare)
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>(w|W)ild\s?(n|N)odes</string>
+            <string>Participated in (w|W)ild</string>
           </regexCodeList>
           <regexCodePropertyList>
             <integer>1</integer>
@@ -494,7 +568,7 @@ fairySec:addActivity(loggedFlare)
   timestamp = matches[2],
   trackedType = "otherConquest",
   desc = "Wild Nodes",
-  names = matches[4]
+  names = matches[3]
 }
 fairySec:addActivity(loggedConquest)</script>
             <triggerType>0</triggerType>
@@ -508,7 +582,7 @@ fairySec:addActivity(loggedConquest)</script>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; Participated in (?:w|W)ilde?\s?(?:n|N)odes\:\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
@@ -561,7 +635,7 @@ fairySec:addActivity(loggedDesign)</script>
             </regexCodePropertyList>
           </Trigger>
         </TriggerGroup>
-        <Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+        <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>library stage tracking</name>
           <script></script>
           <triggerType>0</triggerType>
@@ -608,7 +682,7 @@ fairySec.db.orgCulture[bookId] = author</script>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored (\d+) points - Published a book.\s?\((#(\d+) - (\w+) - .*)\)</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored (\d+) points - Published a book.\s?\((#(\d+) - (\w+) - .*\))</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
@@ -623,6 +697,7 @@ local author = fairySec.db.orgCulture[bookId]
 if author == nil then author = "" end
 
 local loggedLibrary = {
+  uniqueId = matches[2].." library"..contestType.." library",
   timestamp = matches[2],
   trackedType = "library",
   desc = contestType.." Prestige - "..desc,
@@ -640,7 +715,7 @@ fairySec:addActivity(loggedLibrary)</script>
             <colorTriggerFgColor>#000000</colorTriggerFgColor>
             <colorTriggerBgColor>#000000</colorTriggerBgColor>
             <regexCodeList>
-              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored 50 points - Winning (\w+) Library Contest \((#(\d+) - .*)\)</string>
+              <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored 50 points - Winning (\w+) Library Contest\s+\((#(\d+) - .*)\)</string>
             </regexCodeList>
             <regexCodePropertyList>
               <integer>1</integer>
@@ -769,15 +844,19 @@ end
 local function getActivityArgs(args)
   local uniqueId = nil
   local endIndex, uniqueAppend, timestamp, trackedType
-  _, endIndex, timestamp = string.find(args, "^(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)")
+  _, endIndex, timestamp = string.find(args, "(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)")
   if timestamp == nil then
     timestamp = os.date("!%Y/%m/%d %H:%M:%S", getEpoch())
-    _, endIndex, uniqueAppend, trackedType = string.find(args, "(%w*%s?%((%a+)%))%s+")
-    if trackedType ~= nil then
-      uniqueId = timestamp.." "..uniqueAppend
-    end
+    _, endIndex, uniqueAppend, trackedType = string.find(args, "(%w*)%s?%((%a+)%)%s+")
   else
-    _, endIndex, uniqueId, timestamp, trackedType = string.find(args, "((%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s+%w*%s?%((%a+)%))%s*")
+    _, endIndex, timestamp, uniqueAppend, trackedType = string.find(args, "(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s+(%w*)%s?%((%a+)%)%s*")
+  end
+  if trackedType ~= nil then
+    if string.trim(uniqueAppend) == "" then
+      uniqueId = timestamp.." "..trackedType
+    else
+      uniqueId = timestamp.." "..string.trim(uniqueAppend).." "..trackedType
+    end
   end
   if endIndex == nil then
     endIndex = 0
@@ -943,7 +1022,7 @@ function fairySec:isRoughYearEnd()
 end
 
 fairySec.tracking = {
-  ["types"] = {"audit", "timequake", "domoth", "revolt", "aetherflare", "otherConquest",
+  ["types"] = {"audit", "leadership", "timequake", "domoth", "revolt", "aetherflare", "otherConquest",
     "design", "library", "stage",
     "power", "ikon"}
 }
@@ -970,31 +1049,35 @@ fairySec.loggedActivitySchema = {
           <packageName></packageName>
           <script>--- org-specific rewards in terms of marks/credits
 fairySec.rewards = {
+  ["leadership"] = {["minister"] = 5, ["aide"] = 4, ["teacher"] = 4, ["trademaster"] = 5},
   ["timequake"] = 3,
+  ["domoth"] = 5,
   ["revolt"] = 5,
   ["aetherflare"] = 5,
   ["otherConquest"] = 5,
-  ["domoth"] = fairySec.rewards.otherConquest,
   ["design"] = 15,
-  ["prestige"] = 60,
-  ["empower"] = 10, -- empowering the Aspects/Elemental Lords
-  ["guild"] = 50, -- credits per guild
-  ["total"] = {
+  ["empower"] = 10,
+}
+
+if not fairySec.rewards.total then
+  fairySec.rewards.total = {
     ["year"] = "",
     ["logDateStart"] = "",
     ["logDateEnd"] = "",
     ["yearlyCredits"] = 0,
-    ["memberCredits"] = 0,
-    ["guildCredits"] = 50 * 3,
-  },
-}
+    ["leadershipCredits"] = 0,
+    ["memberMarks"] = 0,
+    ["guildCredits"] = 0,
+  }
+end
 
 fairySec.orgPolicy = {
-  ["name"] = "",
-  ["leader"] = "",
+  ["name"] = "Serenwilde",
+  ["leader"] = "Xiran",
 -- 'types' for key list in-order when iterating
   ["types"] = {"timequake", "conquest", "design", "culture", "power", "ikon"},
   ["labels"] = {
+    ["leadership"] = "Leadership",
     ["timequake"] = "Timequakes",
     ["conquest"] = "Conquest Activities",
     ["design"] = "Designs",
@@ -1002,6 +1085,7 @@ fairySec.orgPolicy = {
     ["power"] = "Power",
     ["ikon"] = "Ikon Tournament"
   },
+  ["maxTimequakeReward"] = 36,
   ["revolt"] = {
     "Stewartsville",
     "Estelbar",
@@ -1049,6 +1133,7 @@ end
 
 fairySec.recordSchema = {
   ["name"] = "",
+  ["leadership"] = {},
   ["timequake"] = {},
   ["domoth"] = {},
   ["revolt"] = {},
@@ -1073,6 +1158,9 @@ fairySec.recordSchema = {
 -- { ["formattedDesc"] = string, ["reward"] = number }
 
 -- additional saved data specific to org
+if not fairySec.db.orgPowerIds then
+  fairySec.db.orgPowerIds = {}
+end
 if not fairySec.db.orgCulture then
   fairySec.db.orgCulture = {}
 end
@@ -1429,7 +1517,7 @@ end
 function fairySec:addConvertedDate(logDate, gameDate, gameYear)
   fairySec.db.convertedDate[logDate] = { ["date"] = gameDate, ["year"] = gameYear }
   local gameDate = fairySec.db.convertedDate[logDate]
-  -- fairySec:debug("adding convertedDate "..logDate.." = { date = "..gameDate.date..", year = "..gameDate.year.." }")
+  fairySec:debug("adding convertedDate "..logDate.." = { date = "..gameDate.date..", year = "..gameDate.year.." }")
   
   return gameDate
 end
@@ -1449,8 +1537,10 @@ function fairySec:getOSTime(logDate)
   return time
 end
 
-
 function fairySec:getGameDate(logDate)
+  if not table.contains(fairySec.db.convertedDate, logDate) then
+    fairySec:error(logDate + " not found in coverted dates\n")
+  end
   return fairySec.db.convertedDate[logDate].date
 end
 
@@ -1579,6 +1669,8 @@ end
 -- org-specific print functions for FAIRYSEC REPORT
 function fairySec.print:org(asSummary)
   fairySec.print:header(fairySec.rewards.total)
+  echo("\n")
+  fairySec.print:leadershipRewards(fairySec.rewards.total)
   fairySec.print:hr()
   for name, record in spairs(fairySec.records) do
     if (fairySec.orgRecord:getTotal(record) &gt; 0) then
@@ -1600,18 +1692,21 @@ function fairySec.print:header(total)
   else
     year = year.." CE"
   end
-  echo("===========================\n"..
-    "= Distribution for "..year.." =\n"..
-    "===========================\n"..
+  echo("=================================\n"..
+    "= Distribution Marks for "..year.." =\n"..
+    "=================================\n"..
     "\n")
 
   echo("--------------\n"..
     "Commune Wide -\n"..
-    "--------------\n"..
-    "\n")
-  echo("Total Rewards to Distribute = "..total.memberCredits.."\n"..
+    "--------------\n")
+  echo("Total CMR = "..total.memberMarks.."\n"..
     "Yearly Credits Earned = "..total.yearlyCredits.."\n\n")
   fairySec.print:creditsPerGuild(total.yearlyCredits)
+  echo((total.yearlyCredits * 0.81).." credits for individual distribution\n")
+  if fairySec.orgRecord:isPercentageDistribution() then
+    echo("exceeds 81% of yearly credits, switching to percentage distribution\n")
+  end
 end
 
 -- print credits for each guild
@@ -1622,7 +1717,27 @@ function fairySec.print:creditsPerGuild(yearlyCredits)
   else
     credits = tostring(credits)
   end
-  echo(string.format("%3d", credits).." to be distributed to each guild\n")
+  echo(string.format("%3d", credits).." credits (%3) to -each- guild\n")
+end
+
+-- print credits for leadership
+function fairySec.print:leadershipRewards(total)
+  echo("--------------\n"..
+    "- Leadership -\n"..
+    "--------------\n")
+  local subtotal = 0
+  for name, record in spairs(fairySec.records) do
+    subtotal = fairySec.orgRecord:tallyLeadershipSubTotalOf(record)
+    if (subtotal &gt; 0) then      
+      echo(string.format("%2d", subtotal).." to "..record.name)
+      for _, activity in ipairs(record.leadership) do
+        echo(", "..activity.formattedDesc)
+      end
+      echo("\n")
+    end
+  end
+
+  echo(string.format("\n".."%2d credits paid to leadership\n", total.leadershipCredits))
 end
 
 -- print by person's name 
@@ -1651,69 +1766,108 @@ function fairySec.print:record(record)
   "\n")
   for _, type in ipairs(fairySec.orgPolicy.types) do
     if (fairySec.orgRecord:getSubTotal(type, record) &gt; 0) then
-      echo(fairySec.orgPolicy.labels[type]..": ")
-      if type == "timequake" then
-        echo("("..table.size(record[type])..")\n")
-        printTypesIn(record, {type})
-      elseif type == "design" then
-        echo("("..table.size(record[type])..")\n")
-        printTypesIn(record, {type})
-      elseif type == "conquest" then
-        echo("("..(
-          table.size(record["domoth"]) +
-          table.size(record["revolt"]) +
-          table.size(record["aetherflare"]) +
-          table.size(record["otherConquest"])
-        )..")\n")
-        printTypesIn(record, {"domoth", "revolt", "aetherflare", "otherConquest"})
+      echo(fairySec.orgPolicy.labels[type]..":\n")
+      if type == "conquest" then
+        printTypesIn(record, {"revolt", "domoth", "aetherflare", "otherConquest"})
       elseif type == "culture" then
-        echo("\n")
         printTypesIn(record, {"library", "stage"})
       else
-        echo("\n")
         for _, activity in ipairs(record[type]) do
           echo(activity.formattedDesc.."\n")
         end
       end
-      echo("Sub-Total = "..fairySec.orgRecord:getSubTotal(type, record).."\n\n")
+      if type == "timequake" and fairySec.orgRecord:getSubTotal(type, record) == fairySec.orgPolicy.maxTimequakeReward then
+        echo("Sub-Total CMR = "..fairySec.orgRecord:getSubTotal(type, record).." (max)\n\n")
+      else
+        echo("Sub-Total CMR = "..fairySec.orgRecord:getSubTotal(type, record).."\n\n")
+      end
     end
   end
-  echo("Total Credits = "..fairySec.orgRecord:getTotal(record).." credits\n")
+  local personCMR = fairySec.orgRecord:getTotal(record)
+  local personCredits = personCMR
+  local total = fairySec.rewards.total
+  if fairySec.orgRecord:isPercentageDistribution() then
+    personCredits = math.ceil((personCMR / total.memberMarks) * (total.yearlyCredits * 0.81))
+    echo("Total CMR = "..personCMR.."\n")
+    echo(personCredits.." credits = ("..personCMR.." CMR / "..total.memberMarks.." CMR) * "..(total.yearlyCredits * 0.81).." credits\n")
+  else
+    echo("Total Credits = "..personCredits.." credits\n")
+  end
 end
 
 function fairySec.print:footer(total)
+  local formattedLeadershipCredits = " --"
+  if total.leadershipCredits &gt; 0 then
+    formattedLeadershipCredits = string.format("%3d", total.leadershipCredits)
+  end
+  echo(formattedLeadershipCredits.." credits to Leadership\n")
+
   local formattedGuildCredits = " --"
   if total.guildCredits &gt; 0 then
     formattedGuildCredits = string.format("%3d", total.guildCredits)
   end
-  echo(formattedGuildCredits.." credits distributed to Guilds\n")
+  echo(formattedGuildCredits.." credits to Guilds\n")
 
   local formattedMemberCredits = " --"
+  local totalMemberCredits = 0
   if total.yearlyCredits &gt; 0 then
-    formattedMemberCredits = string.format("%3d", total.memberCredits)
+    if fairySec.orgRecord:isPercentageDistribution() then
+      for _, record in spairs(fairySec.records) do
+        local personCMR = fairySec.orgRecord:getTotal(record)
+        totalMemberCredits = totalMemberCredits + math.ceil((personCMR / total.memberMarks) * (total.yearlyCredits * 0.81))
+      end
+    else
+      totalMemberCredits = total.memberMarks
+    end
+    formattedMemberCredits = tostring(totalMemberCredits)
   end
-  echo(formattedMemberCredits.." credits distributed to Members\n")
+  echo(formattedMemberCredits.." credits to Members\n")
 
   echo("---\n")
-  echo(tostring(total.memberCredits + total.guildCredits).." Total Distributed\n")
+  echo(tostring(totalMemberCredits + total.leadershipCredits + total.guildCredits).." Total Distributed\n")
 end
-
 -- end org-specific print functions for FAIRYSEC REPORT
 
 -- org-specific print functions for FAIRYSEC REWARDS
 function fairySec.print:orgDistribution()
   local total = fairySec.rewards.total
+  -- anomalies
+  local names = {};
+  for name, record in spairs(fairySec.records) do
+    local subtotal = fairySec.orgRecord:tallyTimequakeSubTotalOf(record)
+    if (subtotal &gt; 0) then
+      table.insert(names, record.name)
+    end
+  end
+  echo("WRITELOG SERENWILDE -"..#names.." free scarlet anomalies distributed for "..total.year.." CE timequakes: "..table.concat(names, ", ").."\n")
+  echo("\n")
+
+  -- leadership
+  for name, record in spairs(fairySec.records) do
+    local subtotal = fairySec.orgRecord:tallyLeadershipSubTotalOf(record)
+    if (subtotal &gt; 0) then
+      echo("COMMUNE CREDITS TRANSFER "..subtotal.." to "..record.name.. " "..total.year.." CE, serving as ")
+      for i, activity in ipairs(record.leadership) do
+        echo(activity.formattedDesc)
+        if (i &lt; #record.leadership) then echo(", ") end
+      end
+      echo("\n")
+    end
+  end
+  echo("See CHELP LEADERSHIP.\n\n")
 
   -- individual
   for _, record in spairs(fairySec.records) do
     local personCMR = fairySec.orgRecord:getTotal(record)
     local personCredits = personCMR
-    echo("COMMUNE CREDITS TRANSFER "..personCredits.." TO "..record.name.." Rewards "..total.year.." CE\n")
+    if fairySec.orgRecord:isPercentageDistribution() then
+      personCredits = math.ceil((personCMR / total.memberMarks) * (total.yearlyCredits * 0.81))
+    end
+    echo("COMMUNE CREDITS TRANSFER "..personCredits.." TO "..record.name.." "..total.year.." CE service\n")
   end
   -- guild
-  echo("COMMUNE CREDITS TRANSFER "..total.guildCredits.." TO "..fairySec.orgPolicy.leader.." "..total.year.." CE guild distribution.\n")
-end
--- end org-specific print functions for FAIRYSEC REWARDS</script>
+  echo("COMMUNE CREDITS TRANSFER "..total.guildCredits.." TO "..fairySec.orgPolicy.leader.." "..total.year.." CE guild distribution. See CHELP YEARLYCREDITS and PROJECT 520. Thank you!\n")
+end</script>
           <eventHandlerList />
         </Script>
         <Script isActive="yes" isFolder="no">
@@ -1781,8 +1935,51 @@ function fairySec.orgRecord:setRecordFor(name)
   end
 end
 
--- check for revolt or aetherflare naming spheres in play
-local function getFormattedStringAndRewardWithSpheres(activity)
+-- org-specific formatting functions
+local function getTallyOfLeadership(activity)
+  local formattedString = activity.desc
+  
+  local reward
+  if string.find(activity.desc, "[tT]each") then
+    reward = fairySec.rewards.leadership.teacher
+  elseif string.find(activity.desc, "[aA]ide") then
+    reward = fairySec.rewards.leadership.aide
+  elseif string.find(activity.desc, "Minister") or
+    string.find(activity.desc, "Treasurer") or 
+    string.find(activity.desc, "Steward") or 
+    string.find(activity.desc, "Chancellor") or
+    string.find(activity.desc, "Librarian") then
+    reward = fairySec.rewards.leadership.minister
+  elseif string.find(activity.desc, "Trademaster") then
+    reward = fairySec.rewards.leadership.trademaster
+  else
+    fairySec.orgRecord:addWarning(activity.uniqueId, activity.timestamp.." ("..trackedType..") not in expected format\n"..
+      "\t"..activity.desc..": "..activity.names.."\n"..
+      "FAIRYSEC UPDATE ACTIVITY "..activity.timestamp.." ("..trackedType..") &lt;updated desc&gt;: "..activity.names.." and re-run report as needed. If the listed spheres are correct, add 'audited' to the updated description to remove this warning."
+    )
+  end
+
+  return formattedString, reward
+end
+
+local function getTallyOfTimequake(activity)
+  local formattedString = fairySec:getGameDate(activity.timestamp)
+  local reward = fairySec.rewards.timequake
+  
+  return formattedString, reward
+end
+
+local function getTallyOfDomoth(activity)
+  local _, _, monthName = string.find(fairySec:getGameDate(activity.timestamp), "%d+ (%w+)")
+  local _, _, throne = string.find(activity.desc, "%- (%w+)")
+  local formattedString = "Domoth - "..throne:title().." ("..monthName..")"
+  local reward = fairySec.rewards.domoth
+  
+  return formattedString, reward
+end
+
+-- Seren-specific, rewards based on number of spheres of revolt or aetherflare
+local function getTallyOfSpheres(activity)
   local formattedString = ""
   local reward = 0
 
@@ -1796,70 +1993,68 @@ local function getFormattedStringAndRewardWithSpheres(activity)
       table.insert(spheres, sphere)
     end
   end
-  if table.size(spheres) &gt; 0 then
-    reward = fairySec.rewards[trackedType]
+  if spheres[1] == "Rikenfriez" then
+    reward = 5
+  else
+    reward = table.size(spheres) * fairySec.rewards[trackedType]
   end
   sphereSet = table.concat(spheres, "/")
   formattedString = formattedString..sphereSet
-  if reward == 0 then
-    fairySec.orgRecord:addWarning(activity.uniqueId, activity.timestamp.." ("..trackedType..") does not specify a village or bubble in desc: names, reward is currently 0\n"..
+  if reward == 0 or (not table.contains(fairySec.orgPolicy[trackedType.."Set"], sphereSet) and not string.find(descLowercase, "audited")) then
+    fairySec.orgRecord:addWarning(activity.uniqueId, activity.timestamp.." ("..trackedType..") may not have all spheres in desc\n"..
       "\t"..activity.desc..": "..activity.names.."\n"..
-      "FAIRYSEC UPDATE ACTIVITY &lt;logDate&gt; "..trackedType:upper().." &lt;updated desc&gt;: &lt;names&gt; and re-run report as needed."
+      "FAIRYSEC UPDATE ACTIVITY "..activity.timestamp.." ("..trackedType..") &lt;updated desc&gt;: "..activity.names.." and re-run report as needed. If the listed spheres are correct, add 'audited' to the updated description to remove this warning."
     )
   end
   
   return formattedString, reward
 end
 
-local function getFormattedStringAndRewardOfLibrary(activity)
+local function getTallyOfOtherConquest(activity)
+  local formattedString = activity.desc
+  local reward = fairySec.rewards.otherConquest
+  
+  return formattedString, reward
+end
+
+local function getTallyOfDesign(activity)
+  local formattedString = activity.desc
+  local reward = fairySec.rewards.design
+
+  return formattedString, reward
+end
+
+local function getTallyOfLibrary(activity)
+  local formattedString = ""
+  local reward = 0
+   
   local prestigeType, points, bookId, title 
   _, _, points, bookId, title = string.find(activity.desc, "(%d+) points %- #(%d+) %- %w+ %- (.*)$")
   if points then
-    reward = tonumber(points) * fairySec.rewards.libraryWeight
+    reward = tonumber(points) * 4
     formattedString = "'"..title.."' (#"..bookId..") - "..reward
   else
-    _, _, prestige, bookId, title = string.find(activity.desc, "(%w+ Prestige) %- #(%d+) %- (.*)%)$")      
+    _, _, prestige, bookId, title = string.find(activity.desc, "(%w+ Prestige) %- #(%d+) %- (.*)$")      
     if prestige then
-      reward = fairySec.rewards.prestige
+      reward = 60
       formattedString = prestige.." - '"..title.."' (#"..bookId..") - "..reward
     end
   end
   if points == nil and prestige == nil then
-    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
   end
+
+  return formattedString, reward
 end
 
--- get formatted string and reward of a given activity
-function fairySec.orgRecord:getFormattedStringAndReward(activity)
+local function getTallyOfPower(activity)
   local formattedString = ""
   local reward = 0
-
-  local trackedType = activity.trackedType
-  if activity.trackedType == "timequake" then
-    formattedString = fairySec:getGameDate(activity.timestamp)
-    reward = fairySec.rewards.timequake
-  elseif activity.trackedType == "design" then
+   
+  if string.find(activity.desc, "empowered") then
     formattedString = activity.desc
-    reward = fairySec.rewards.design
-  elseif trackedType == "domoth" then
-    local _, _, monthName = string.find(fairySec:getGameDate(activity.timestamp), "%d+ (%w+)")
-    local throne = string.match(activity.desc, "^(%w+)")
-    formattedString = "Domoth - "..throne:title().." ("..monthName..")"
-    reward = fairySec.rewards.domoth
-  elseif trackedType == "revolt" then
-    formattedString = "Revolt"
-    reward = fairySec.rewards.revolt
-  elseif trackedType == "aetherflare" then
-    formattedString = "Flare"
-    reward = fairySec.rewards.aetherflare
-  elseif trackedType == "otherConquest" then
-    formattedString = activity.desc
-    reward = fairySec.rewards.otherConquest
-  elseif trackedType == "library" then
-    getFormattedStringAndRewardOfLibrary(activity)
-  elseif trackedType == "stage" or
-      trackedType == "power" or
-      trackedType == "ikon" then
+    reward = fairySec.rewards.empower -- empowered aspect
+  else
     _, _, reward = string.find(activity.desc, "- (%d+)")
     if reward ~= nil then
       formattedString = activity.desc
@@ -1867,6 +2062,51 @@ function fairySec.orgRecord:getFormattedStringAndReward(activity)
     else
       fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
     end
+  end
+
+  return formattedString, reward
+end
+
+local function getTallyOfIkon(activity)
+  local formattedString = ""
+  local reward = 0
+   
+    _, _, reward = string.find(activity.desc, "- (%d+)")
+    if reward ~= nil then
+      formattedString = activity.desc
+      reward = tonumber(reward)
+    else
+      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+    end
+
+  return formattedString, reward
+end
+-- end org-specific formatting functions
+
+-- get formatted string and reward of a given activity
+function fairySec.orgRecord:getFormattedStringAndReward(activity)
+  local formattedString = ""
+  local reward = 0
+
+  local trackedType = activity.trackedType
+  if activity.trackedType == "leadership" then
+    formattedString, reward = getTallyOfLeadership(activity)
+  elseif activity.trackedType == "timequake" then
+    formattedString, reward = getTallyOfTimequake(activity)
+  elseif trackedType == "domoth" then
+    formattedString, reward = getTallyOfDomoth(activity)
+  elseif trackedType == "revolt" or trackedType == "aetherflare" then
+    formattedString, reward = getTallyOfSpheres(activity)
+  elseif trackedType == "otherConquest" then
+    formattedString, reward = getTallyOfOtherConquest(activity)
+  elseif activity.trackedType == "design" then
+    formattedString, reward = getTallyOfDesign(activity)
+  elseif trackedType == "library" then
+    formattedString, reward = getTallyOfLibrary(activity)
+  elseif trackedType == "power" then
+    formattedString, reward = getTallyOfPower(activity)
+  elseif trackedType == "ikon" then
+    formattedString, reward = getTallyOfIkon(activity)
   else
     fairySec.orgRecord:addError(activity.uniqueId, "type "..trackedType.." not supported for fairySec.orgRecord:getFormattedStringAndReward()")
   end
@@ -1880,17 +2120,20 @@ end
 function fairySec.orgRecord:tallyOrgTotals(yearlyCredits)
   fairySec.rewards.total.guildCredits = fairySec.orgRecord:creditsPerGuild(yearlyCredits) * 3
 
-  local memberCredits = 0
+  local memberMarks = 0
+  local leadershipCredits = 0
   for name, record in pairs(fairySec.records) do
     fairySec.orgRecord:tallyTotalsOf(record)
-    memberCredits = memberCredits + record.total
+    memberMarks = memberMarks + record.total
+    leadershipCredits = leadershipCredits + fairySec.orgRecord:tallyLeadershipSubTotalOf(record)
   end
-  fairySec.rewards.total.memberCredits = memberCredits
+  fairySec.rewards.total.memberMarks = memberMarks
+  fairySec.rewards.total.leadershipCredits = leadershipCredits
 end
 
 function fairySec.orgRecord:creditsPerGuild(yearlyCredits)
   if yearlyCredits ~= nil then
-    return fairySec.rewards.guild
+    return yearlyCredits * 0.03
   else
     return 0
   end
@@ -1906,21 +2149,39 @@ function fairySec.orgRecord:tallyTotalsFor(name)
 end
 
 function fairySec.orgRecord:tallyTotalsOf(record)
-  local total = 0
-  total = fairySec.orgRecord:tallyTimequakeSubTotalOf(record) +
-  fairySec.orgRecord:tallyDomothSubTotalOf(record) +
-  fairySec.orgRecord:tallyConquestSubTotalOf(record) +
-  fairySec.orgRecord:tallyDesignSubTotalOf(record) +
-  fairySec.orgRecord:tallyCultureSubTotalOf(record) +
-  fairySec.orgRecord:tallyIkonSubTotalOf(record) +
+  -- leadership is considered separate category from individual rewards 
+  fairySec.orgRecord:tallyTimequakeSubTotalOf(record)
+  fairySec.orgRecord:tallyDomothSubTotalOf(record)
+  fairySec.orgRecord:tallyConquestSubTotalOf(record)
+  fairySec.orgRecord:tallyDesignSubTotalOf(record)
+  fairySec.orgRecord:tallyCultureSubTotalOf(record)
+  fairySec.orgRecord:tallyIkonSubTotalOf(record)
   fairySec.orgRecord:tallyPowerSubTotalOf(record)
+  
+  local total = 0
+  for _, subtotal in pairs(record.subtotals) do
+    total = total + subtotal
+  end
 
   record.total = total
+end
+
+function fairySec.orgRecord:tallyLeadershipSubTotalOf(record)
+  local leaderSubTotal = 0
+
+  for _, activity in ipairs(record.leadership) do
+    leaderSubTotal = leaderSubTotal + activity.reward
+  end
+
+  return leaderSubTotal -- not saved
 end
 
 function fairySec.orgRecord:tallyTimequakeSubTotalOf(record)
   local timequakeSubTotal = table.size(record.timequake) * fairySec.rewards.timequake
   
+  if timequakeSubTotal &gt; fairySec.orgPolicy.maxTimequakeReward then
+    timequakeSubTotal = fairySec.orgPolicy.maxTimequakeReward
+  end
   record.subtotals.timequake = timequakeSubTotal
 
   return record.subtotals.timequake
@@ -1937,7 +2198,7 @@ end
 function fairySec.orgRecord:tallyConquestSubTotalOf(record)
   local conquestSubTotal = 0
 
-  local conquestTypes = {"revolt", "aetherflare", "otherConquest"}
+  local conquestTypes = {"revolt", "domoth", "aetherflare", "otherConquest"}
   for _, type in ipairs(conquestTypes) do
     for _, activity in ipairs(record[type]) do
       conquestSubTotal = conquestSubTotal + activity.reward
@@ -1988,15 +2249,20 @@ function fairySec.orgRecord:tallyPowerSubTotalOf(record)
   
   return record.subtotals.power
 end
-
 -- end org-specific record functions
 
 function fairySec.orgRecord:getSubTotal(type, record)
   return record.subtotals[type]
 end
 
+
 function fairySec.orgRecord:getTotal(record)
   return record.total
+end
+
+function fairySec.orgRecord:isPercentageDistribution()
+  local total = fairySec.rewards.total
+  return total.memberMarks &gt; total.yearlyCredits * 0.81
 end
 
 function fairySec.orgRecord:clearTallyErrorsAndWarnings()
@@ -2073,7 +2339,8 @@ function fairySec:gatherLogs()
       -- because pointlog does not have blank weave logs, i.e., "No activity" entries,
       -- we must search more logs to ensure it includes this year
       fairySec:searchLog("pointlog", weaveStart, 0)
-      fairySec:searchLog("powerlog", weaveStart - 5, weaveEnd + 5)
+      fairySec:searchLog("powerlog", weaveStart - 6, weaveEnd + 6, "empowered")
+      sendAll("project pfd", "more")
       fairySec:showGatherInstructions()
     end
   )
