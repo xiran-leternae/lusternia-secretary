@@ -465,7 +465,7 @@ fairySec:addActivity(loggedFlare)
               <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ \&gt; ((?:[ \/0-9A-Za-z,\(\)\.\-'])+):\s*((?:\w+,?\s?)+(?:and \w+)?)\.$</string>
             </regexCodeList>
             <regexCodePropertyList>
-              <integer>0</integer>
+              <integer>1</integer>
             </regexCodePropertyList>
           </Trigger>
         </Trigger>
