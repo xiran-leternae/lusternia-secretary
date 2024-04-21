@@ -769,15 +769,19 @@ end
 local function getActivityArgs(args)
   local uniqueId = nil
   local endIndex, uniqueAppend, timestamp, trackedType
-  _, endIndex, timestamp = string.find(args, "^(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)")
+  _, endIndex, timestamp = string.find(args, "(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)")
   if timestamp == nil then
     timestamp = os.date("!%Y/%m/%d %H:%M:%S", getEpoch())
-    _, endIndex, uniqueAppend, trackedType = string.find(args, "(%w*%s?%((%a+)%))%s+")
-    if trackedType ~= nil then
-      uniqueId = timestamp.." "..uniqueAppend
-    end
+    _, endIndex, uniqueAppend, trackedType = string.find(args, "(%w*)%s?%((%a+)%)%s+")
   else
-    _, endIndex, uniqueId, timestamp, trackedType = string.find(args, "((%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s+%w*%s?%((%a+)%))%s*")
+    _, endIndex, timestamp, uniqueAppend, trackedType = string.find(args, "(%d%d%d%d/%d%d/%d%d %d%d:%d%d%:%d%d)%s+(%w*)%s?%((%a+)%)%s*")
+  end
+  if trackedType ~= nil then
+    if string.trim(uniqueAppend) == "" then
+      uniqueId = timestamp.." "..trackedType
+    else
+      uniqueId = timestamp.." "..string.trim(uniqueAppend).." "..trackedType
+    end
   end
   if endIndex == nil then
     endIndex = 0
