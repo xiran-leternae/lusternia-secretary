@@ -1356,7 +1356,9 @@ function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
       fairySec:error("unrecognised trackedType of "..loggedActivity.trackedType.." on activity: "..loggedActivity.desc)
     elseif loggedActivity.names == nil then
       fairySec:error("names required on activity: "..loggedActivity.desc)
-    elseif not fairySec:isWithinRewardYear(loggedActivity.timestamp) then
+    elseif not fairySec:isWithinRewardYear(loggedActivity.timestamp) and
+        not string.find(loggedActivity.uniqueId, "Moonhart power") and
+        not string.find(loggedActivity.uniqueId, "Visitor power") then
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
     else
       local activity = setNewActivity(loggedActivity)
