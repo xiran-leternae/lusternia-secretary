@@ -2,7 +2,7 @@
 alpha 
 
 # Install
-Download the raw of FairySec.xml. In Mudlet, select Packages and Install New Package.
+Download the raw of FairySec_Serenwilde.xml. In Mudlet, select Packages and Install New Package.
 
 # Instructions
 Note: If not already done, configure org-specific variables under 'fairySec variables' > 'org specific'
