@@ -1374,6 +1374,7 @@ function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
     elseif loggedActivity.names == nil then
       fairySec:error("names required on activity: "..loggedActivity.desc)
     elseif not fairySec:isWithinRewardYear(loggedActivity.timestamp) and
+        loggedActivity.uniqueId ~= nil and
         not string.find(loggedActivity.uniqueId, "Moonhart power") and
         not string.find(loggedActivity.uniqueId, "Visitor power") then
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
@@ -1558,7 +1559,7 @@ end
 
 function fairySec:getGameDate(logDate)
   if not table.contains(fairySec.db.convertedDate, logDate) then
-    fairySec:error(logDate + " not found in coverted dates\n")
+    fairySec:error(logDate.." not found in coverted dates\n")
   end
   return fairySec.db.convertedDate[logDate].date
 end
@@ -1977,9 +1978,9 @@ local function getTallyOfLeadership(activity)
   elseif string.find(activity.desc, "Trademaster") then
     reward = fairySec.rewards.leadership.trademaster
   else
-    fairySec.orgRecord:addWarning(activity.uniqueId, activity.timestamp.." ("..trackedType..") not in expected format\n"..
+    fairySec.orgRecord:addWarning(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") not in expected format\n"..
       "\t"..activity.desc..": "..activity.names.."\n"..
-      "FAIRYSEC UPDATE ACTIVITY "..activity.timestamp.." ("..trackedType..") &lt;updated desc&gt;: "..activity.names.." and re-run report as needed. If the listed spheres are correct, add 'audited' to the updated description to remove this warning."
+      "FAIRYSEC UPDATE ACTIVITY "..activity.timestamp.." ("..activity.trackedType..") &lt;updated desc&gt;: "..activity.names.." and re-run report as needed. If the listed spheres are correct, add 'audited' to the updated description to remove this warning."
     )
   end
 
@@ -2065,7 +2066,7 @@ local function getTallyOfLibrary(activity)
     end
   end
   if points == nil and prestige == nil then
-    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
   end
 
   return formattedString, reward
@@ -2084,7 +2085,7 @@ local function getTallyOfPower(activity)
       formattedString = activity.desc
       reward = tonumber(reward)
     else
-      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
     end
   end
 
@@ -2122,7 +2123,7 @@ function fairySec.orgRecord:getFormattedStringAndReward(activity)
     formattedString, reward = getTallyOfSpheres(activity)
   elseif trackedType == "otherConquest" then
     formattedString, reward = getTallyOfOtherConquest(activity)
-  elseif activity.trackedType == "design" then
+  elseif trackedType == "design" then
     formattedString, reward = getTallyOfDesign(activity)
   elseif trackedType == "library" then
     formattedString, reward = getTallyOfLibrary(activity)
