@@ -388,13 +388,14 @@ fairySec:addActivity(loggedPower)</script>
             <script>if fairySec:isWithinRewardYear(matches[2]) then
   fairySec:sendLogDate(matches[2]) -- convert date
 
-local loggedQuake = {
-  timestamp = matches[2],
-  trackedType = "timequake",
-  desc = matches[3],
-  names = matches[4]
-}
-fairySec:addActivity(loggedQuake)</script>
+  local loggedQuake = {
+    timestamp = matches[2],
+    trackedType = "timequake",
+    desc = matches[3],
+    names = matches[4]
+  }
+  fairySec:addActivity(loggedQuake)
+end</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
@@ -436,15 +437,15 @@ fairySec:addActivity(loggedQuake)</script>
             <name>domoth tally</name>
             <script>if fairySec:isWithinRewardYear(matches[2]) then
   fairySec:sendLogDate(matches[2]) -- convert date
-end
-
-local loggedDomoth = {
-  timestamp = matches[2],
-  trackedType = "domoth",
-  desc = matches[3],
-  names = matches[4]
-}
-fairySec:addActivity(loggedDomoth)</script>
+  
+  local loggedDomoth = {
+    timestamp = matches[2],
+    trackedType = "domoth",
+    desc = matches[3],
+    names = matches[4]
+  }
+  fairySec:addActivity(loggedDomoth)
+end</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
