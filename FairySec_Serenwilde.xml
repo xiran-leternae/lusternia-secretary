@@ -68,7 +68,16 @@ local loggedActivity = {
   names = ""
 }
 
+local loggedActivityIkonParticipation = {
+  uniqueId = logDate.." ".."ikonParticipation",
+  timestamp = logDate,
+  desc = "Participation in the Annual Ikon tournament",
+  trackedType = "ikonParticipation",
+  names = ""
+}
+
 if not fairySec:hasActivity(loggedActivity) then fairySec:addActivity(loggedActivity) end
+if not fairySec:hasActivity(loggedActivityIkonParticipation) then fairySec:addActivity(loggedActivityIkonParticipation) end
 
 if (fairySec.rewards.total.logDateStart ~= "" and fairySec.isRoughYearStart() and
     fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS and
@@ -199,11 +208,17 @@ end
         </Trigger>
         <Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
           <name>audit ikon reward</name>
-          <script>local loggedIkon = {
-  uniqueId = matches[2].." ikon"..matches[4].." ikon",
+          <script>local placeToType = 
+{
+  Winning = "ikonFirst",
+  Second = "ikonSecond",
+}
+
+local loggedIkon = {
+  uniqueId = matches[2].." "..placeToType[matches[4]],
   timestamp = matches[2],
-  trackedType = "ikon",
-  desc = matches[3],
+  trackedType = placeToType[matches[4]],
+  desc = desc,
   names = ""
 }
 fairySec:addActivity(loggedIkon)</script>
@@ -218,7 +233,7 @@ fairySec:addActivity(loggedIkon)</script>
           <colorTriggerFgColor>#000000</colorTriggerFgColor>
           <colorTriggerBgColor>#000000</colorTriggerBgColor>
           <regexCodeList>
-            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Taking (\w+) in the Annual Ikon tournament)</string>
+            <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - (Taking (Second) in the Annual Ikon tournament)</string>
             <string>^(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) - \w+ has scored \d+ points - ((Winning) the Annual Ikon tournament)</string>
           </regexCodeList>
           <regexCodePropertyList>
@@ -372,15 +387,15 @@ fairySec:addActivity(loggedPower)</script>
             <name>timequake tally</name>
             <script>if fairySec:isWithinRewardYear(matches[2]) then
   fairySec:sendLogDate(matches[2]) -- convert date
-end
 
-local loggedQuake = {
-  timestamp = matches[2],
-  trackedType = "timequake",
-  desc = matches[3],
-  names = matches[4]
-}
-fairySec:addActivity(loggedQuake)</script>
+  local loggedQuake = {
+    timestamp = matches[2],
+    trackedType = "timequake",
+    desc = matches[3],
+    names = matches[4]
+  }
+  fairySec:addActivity(loggedQuake)
+end</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
@@ -422,15 +437,15 @@ fairySec:addActivity(loggedQuake)</script>
             <name>domoth tally</name>
             <script>if fairySec:isWithinRewardYear(matches[2]) then
   fairySec:sendLogDate(matches[2]) -- convert date
-end
-
-local loggedDomoth = {
-  timestamp = matches[2],
-  trackedType = "domoth",
-  desc = matches[3],
-  names = matches[4]
-}
-fairySec:addActivity(loggedDomoth)</script>
+  
+  local loggedDomoth = {
+    timestamp = matches[2],
+    trackedType = "domoth",
+    desc = matches[3],
+    names = matches[4]
+  }
+  fairySec:addActivity(loggedDomoth)
+end</script>
             <triggerType>0</triggerType>
             <conditonLineDelta>0</conditonLineDelta>
             <mStayOpen>0</mStayOpen>
@@ -1057,6 +1072,9 @@ fairySec.rewards = {
   ["otherConquest"] = 5,
   ["design"] = 15,
   ["empower"] = 10,
+  ["ikonFirst"] = 15,
+  ["ikonSecond"] = 10,
+  ["ikonParticipation"] = 5,
 }
 
 if not fairySec.rewards.total then
@@ -1357,6 +1375,7 @@ function fairySec:_addActivity(loggedActivity, operation, showConfirmation)
     elseif loggedActivity.names == nil then
       fairySec:error("names required on activity: "..loggedActivity.desc)
     elseif not fairySec:isWithinRewardYear(loggedActivity.timestamp) and
+        loggedActivity.uniqueId ~= nil and
         not string.find(loggedActivity.uniqueId, "Moonhart power") and
         not string.find(loggedActivity.uniqueId, "Visitor power") then
       fairySec:debug("loggedActivity occuring outside "..fairySec.rewards.total.logDateStart.." to "..fairySec.rewards.total.logDateEnd..": "..loggedActivity.desc)
@@ -1541,7 +1560,7 @@ end
 
 function fairySec:getGameDate(logDate)
   if not table.contains(fairySec.db.convertedDate, logDate) then
-    fairySec:error(logDate + " not found in coverted dates\n")
+    fairySec:error(logDate.." not found in coverted dates\n")
   end
   return fairySec.db.convertedDate[logDate].date
 end
@@ -1892,8 +1911,13 @@ end
 local function updateRecordWithActivity(record, activity)
   if activity.trackedType ~= "audit" then
     local formattedDesc, reward = fairySec.orgRecord:getFormattedStringAndReward(activity)
-    if not table.contains(record[activity.trackedType], formattedDesc) then
-      table.insert(record[activity.trackedType],
+    local trackedType = activity.trackedType
+    if string.find(activity.trackedType, "ikon") then
+      trackedType = "ikon"
+    end
+    
+    if not table.contains(record[trackedType], formattedDesc) then
+      table.insert(record[trackedType],
         {["formattedDesc"] = formattedDesc, ["reward"] = reward}
       )
     end
@@ -1955,9 +1979,9 @@ local function getTallyOfLeadership(activity)
   elseif string.find(activity.desc, "Trademaster") then
     reward = fairySec.rewards.leadership.trademaster
   else
-    fairySec.orgRecord:addWarning(activity.uniqueId, activity.timestamp.." ("..trackedType..") not in expected format\n"..
+    fairySec.orgRecord:addWarning(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") not in expected format\n"..
       "\t"..activity.desc..": "..activity.names.."\n"..
-      "FAIRYSEC UPDATE ACTIVITY "..activity.timestamp.." ("..trackedType..") &lt;updated desc&gt;: "..activity.names.." and re-run report as needed. If the listed spheres are correct, add 'audited' to the updated description to remove this warning."
+      "FAIRYSEC UPDATE ACTIVITY "..activity.timestamp.." ("..activity.trackedType..") &lt;updated desc&gt;: "..activity.names.." and re-run report as needed. If the listed spheres are correct, add 'audited' to the updated description to remove this warning."
     )
   end
 
@@ -2043,7 +2067,7 @@ local function getTallyOfLibrary(activity)
     end
   end
   if points == nil and prestige == nil then
-    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
   end
 
   return formattedString, reward
@@ -2062,7 +2086,7 @@ local function getTallyOfPower(activity)
       formattedString = activity.desc
       reward = tonumber(reward)
     else
-      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
     end
   end
 
@@ -2071,15 +2095,14 @@ end
 
 local function getTallyOfIkon(activity)
   local formattedString = ""
-  local reward = 0
+  local reward = fairySec.rewards[activity.trackedType]
    
-    _, _, reward = string.find(activity.desc, "- (%d+)")
-    if reward ~= nil then
-      formattedString = activity.desc
-      reward = tonumber(reward)
-    else
-      fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
-    end
+  if reward ~= nil then
+    formattedString = activity.desc
+    reward = tonumber(reward)
+  else
+    fairySec.orgRecord:addError(activity.uniqueId, activity.timestamp.." ("..activity.trackedType..") "..activity.desc..": "..activity.names.." not in expected format for fairySec.orgRecord:getFormattedStringAndReward()")
+  end
 
   return formattedString, reward
 end
@@ -2101,13 +2124,13 @@ function fairySec.orgRecord:getFormattedStringAndReward(activity)
     formattedString, reward = getTallyOfSpheres(activity)
   elseif trackedType == "otherConquest" then
     formattedString, reward = getTallyOfOtherConquest(activity)
-  elseif activity.trackedType == "design" then
+  elseif trackedType == "design" then
     formattedString, reward = getTallyOfDesign(activity)
   elseif trackedType == "library" then
     formattedString, reward = getTallyOfLibrary(activity)
   elseif trackedType == "power" then
     formattedString, reward = getTallyOfPower(activity)
-  elseif trackedType == "ikon" then
+  elseif string.find(trackedType, "ikon") then
     formattedString, reward = getTallyOfIkon(activity)
   else
     fairySec.orgRecord:addError(activity.uniqueId, "type "..trackedType.." not supported for fairySec.orgRecord:getFormattedStringAndReward()")
