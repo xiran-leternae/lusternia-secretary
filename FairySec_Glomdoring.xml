@@ -1877,9 +1877,8 @@ function fairySec.orgRecord:getFormattedStringAndReward(activity)
     formattedString = activity.desc
     reward = fairySec.rewards.design
   elseif trackedType == "domoth" then
-    local _, _, monthName = string.find(fairySec:getGameDate(activity.timestamp), "%d+ (%w+)")
     local throne = string.match(activity.desc, "^(%w+)")
-    formattedString = "Domoth - "..throne:title().." ("..monthName..")"
+    formattedString = "Domoth - "..throne:title()
     reward = fairySec.rewards.domoth
   elseif trackedType == "revolt" then
     formattedString = "Revolt"
