@@ -84,8 +84,8 @@ if (fairySec.rewards.total.logDateEnd ~= "" and fairySec.isRoughYearEnd() and
   fairySec:debug("setting logDateEnd "..logDate)
   fairySec:debug("setting yearlyCredits "..logDate)
 elseif (fairySec.rewards.total.logDateEnd and not fairySec.isRoughYearEnd() and
-    fairySec:getOSTime(logDate) > fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
-    fairySec:getOSTime(logDate) < fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
   -- presumes full end date is within log and both org and pointlog read
   raiseEvent("fairySecEndGatherLogs")
 end
