@@ -2190,15 +2190,14 @@ function fairySec:endGatherLogs()
 end
 
 
--- some entries may be before actual start; trim these out
+-- some entries may be before actual start or after actual end; trim these out
 function fairySec:trimGatheredLogs()
   local trackedActivities = fairySec.db.log
 
   for uniqueId, activity in spairs(trackedActivities) do
-    if activity.timestamp &lt; fairySec.rewards.total.logDateStart then
+    if (activity.timestamp < fairySec.rewards.total.logDateStart and not fairySec:isRoughYearStart()) or 
+    (activity.timestamp > fairySec.rewards.total.logDateEnd and not fairySec:isRoughYearEnd()) then
       fairySec:deleteActivity(uniqueId)
-    else
-      break
     end
   end
 end</script>
