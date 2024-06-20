@@ -2195,8 +2195,8 @@ function fairySec:trimGatheredLogs()
   local trackedActivities = fairySec.db.log
 
   for uniqueId, activity in spairs(trackedActivities) do
-    if (activity.timestamp < fairySec.rewards.total.logDateStart and not fairySec:isRoughYearStart()) or 
-    (activity.timestamp > fairySec.rewards.total.logDateEnd and not fairySec:isRoughYearEnd()) then
+    if (activity.timestamp &lt; fairySec.rewards.total.logDateStart and not fairySec:isRoughYearStart()) or 
+    (activity.timestamp &gt; fairySec.rewards.total.logDateEnd and not fairySec:isRoughYearEnd()) then
       fairySec:deleteActivity(uniqueId)
     end
   end
