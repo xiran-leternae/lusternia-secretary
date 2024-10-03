@@ -71,21 +71,21 @@ local loggedActivity = {
 if not fairySec:hasActivity(loggedActivity) then fairySec:addActivity(loggedActivity) end
 
 if (fairySec.rewards.total.logDateStart ~= "" and fairySec.isRoughYearStart() and
-    fairySec:getOSTime(logDate) > fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS and
-    fairySec:getOSTime(logDate) < fairySec:getOSTime(fairySec.rewards.total.logDateStart) + fairySec.HOUR_IN_SECONDS) then
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateStart) + fairySec.HOUR_IN_SECONDS) then
   fairySec.rewards.total.logDateStart = logDate
   fairySec:debug("setting logDateStart "..logDate)
 end
 if (fairySec.rewards.total.logDateEnd ~= "" and fairySec.isRoughYearEnd() and
-    fairySec:getOSTime(logDate) > fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
-    fairySec:getOSTime(logDate) < fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
   fairySec.rewards.total.logDateEnd = logDate
   fairySec.rewards.total.yearlyCredits = tonumber(yearlyCredits)
   fairySec:debug("setting logDateEnd "..logDate)
   fairySec:debug("setting yearlyCredits "..logDate)
 elseif (fairySec.rewards.total.logDateEnd ~= "" and not fairySec.isRoughYearEnd() and
-    fairySec:getOSTime(logDate) > fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
-    fairySec:getOSTime(logDate) < fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
+    fairySec:getOSTime(logDate) &gt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) - fairySec.HOUR_IN_SECONDS and
+    fairySec:getOSTime(logDate) &lt; fairySec:getOSTime(fairySec.rewards.total.logDateEnd) + fairySec.HOUR_IN_SECONDS) then
   -- presumes full end date is within log and both org and pointlog read
   fairySec:debug("confirming logDateEnd "..logDate)
   fairySec.rewards.total.logDateEnd = logDate
